@@ -4,27 +4,27 @@
     api-level="22"
     density="xhdpi"
     format="7"
-    timestamp="586943465514609"
+    timestamp="600482670544132"
     token="-3677605624858323648" >
 
     <task
         name="javac"
-        duration="0" />
+        duration="198" />
     <task
         name="instant-run-dex"
         duration="0" />
     <task
         name="instant-run-transform"
-        duration="299" />
+        duration="50" />
     <task
         name="verifier"
-        duration="61" />
+        duration="5" />
 
     <artifact
         location="/Users/thaarres/AndroidStudioProjects/WeatherStation/app/build/outputs/apk/app-debug.apk"
         type="MAIN" />
 
-    <build timestamp="586943465514609" >
+    <build timestamp="600482670544132" >
         <artifact
             location="/Users/thaarres/AndroidStudioProjects/WeatherStation/app/build/outputs/apk/app-debug.apk"
             type="MAIN" />
