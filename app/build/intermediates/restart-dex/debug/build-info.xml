@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<instant-run
+    abi="armeabi-v7a,armeabi"
+    api-level="22"
+    density="xhdpi"
+    format="7"
+    timestamp="586943465514609"
+    token="-3677605624858323648" >
+
+    <task
+        name="javac"
+        duration="0" />
+    <task
+        name="instant-run-dex"
+        duration="0" />
+    <task
+        name="instant-run-transform"
+        duration="299" />
+    <task
+        name="verifier"
+        duration="61" />
+
+    <artifact
+        location="/Users/thaarres/AndroidStudioProjects/WeatherStation/app/build/outputs/apk/app-debug.apk"
+        type="MAIN" />
+
+    <build timestamp="586943465514609" >
+        <artifact
+            location="/Users/thaarres/AndroidStudioProjects/WeatherStation/app/build/outputs/apk/app-debug.apk"
+            type="MAIN" />
+    </build>
+
+</instant-run>
