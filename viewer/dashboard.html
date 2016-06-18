@@ -1,0 +1,85 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+
+    <title>Home data</title>
+
+    <link href="https://google-developers.appspot.com/fusiontables/docs/samples/style/default.css" rel="stylesheet" type="text/css">
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+      
+    <style type="text/css">
+      table {
+        width: 100%;
+      }
+
+      th {
+        text-align: left;
+      }
+    </style>
+
+    <script type="text/javascript">
+      google.load('visualization', '1');
+
+    google.charts.load("current", {packages:['table','corechart']});
+     
+      function draw() {
+          var query = "SELECT Date, DeviceNo8, DeviceNo9";
+          var datatype = document.getElementById('datatype').value;
+        switch (datatype) {
+            case 'Humidity':
+            case 'Pressure':
+            case 'Temperature':
+                query += " FROM 1jQ_Jnnw26pWU05sGBNdXbXlvxB-66_W4fuJgsTG7";
+                break;
+        }
+        query += " ORDER BY Date DESC";
+        
+        var queryText = encodeURIComponent(query);
+          drawChart(query);
+          drawVisualizationTable(query);
+      }
+        
+        function drawVisualizationTable(query) {
+      google.visualization.drawChart({
+        "containerId": "visualization_table_div",
+        "dataSourceUrl": "http://www.google.com/fusiontables/gvizdata?tq=",
+        "query":query,
+        "chartType": "Table",
+        "options": {}
+     });
+    }
+        
+        function drawChart(query) {
+            var options = {
+              title: document.getElementById('datatype').value + ' data',
+              legend: { position: 'bottom' }
+            };
+            
+            google.visualization.drawChart({
+                "containerId": "visualization_chart_div",
+                "dataSourceUrl": "http://www.google.com/fusiontables/gvizdata?tq=",
+                "query":query,
+                "chartType": "LineChart",
+                "options": options
+            });
+            
+        }
+
+      google.setOnLoadCallback(draw);
+    </script>
+
+  </head>
+  <body>
+    <div>
+      <label>Datatype:</label>
+      <select id="datatype" onchange="draw();">
+        <option value="Temperature" selected="selected">Temperature</option>
+        <option value="Humidity">Humidity</option>
+        <option value="Pressure">Pressure</option>
+      </select>
+    </div>
+    <div id="visualization_chart_div"></div>
+    <div id="visualization_table_div"></div>
+  </body>
+</html>
