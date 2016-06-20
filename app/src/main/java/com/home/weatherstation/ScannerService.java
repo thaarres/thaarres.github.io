@@ -31,13 +31,15 @@ public class ScannerService extends Service {
     private static final String DEVICE_NO8_MAC_ADDRESS = "D3:60:FB:B2:D1:39";
     private static final String DEVICE_NO9_MAC_ADDRESS = "FA:67:91:00:D7:B2";
 
-    private BluetoothAdapter mBluetoothAdapter;
     private BluetoothLeScanner mLEScanner;
     private ScanSettings settings;
-    private List<ScanFilter> scanFilters;
+    private List<ScanFilter> scanFilters = new ArrayList<>();
 
-    private boolean mScanning;
     private Handler mHandler;
+
+    // results from scanner, poor mans simple caching approach...
+    Sample deviceNr8 = null;
+    Sample deviceNr9 = null;
 
     // Stops scanning after 20 seconds.
     private static final long SCAN_PERIOD = 20000;
@@ -56,18 +58,16 @@ public class ScannerService extends Service {
         mHandler = new Handler();
 
         // Initializes Bluetooth adapter.
-        final BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-        mBluetoothAdapter = bluetoothManager.getAdapter();
+        BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+        BluetoothAdapter mBluetoothAdapter = bluetoothManager.getAdapter();
 
         enableBT();
 
         mLEScanner = mBluetoothAdapter.getBluetoothLeScanner();
         settings = new ScanSettings.Builder()
                 .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-                .setReportDelay(500)
+                //.setReportDelay(500)
                 .build();
-
-        scanFilters = new ArrayList<ScanFilter>();
 
         super.onCreate();
     }
@@ -77,9 +77,9 @@ public class ScannerService extends Service {
         String action;
         if (intent == null) {
             action = INITIALIZE;
+        } else {
+            action = intent.getAction();
         }
-
-        action = intent.getAction();
 
         if (INITIALIZE.equals(action)) {
             scheduleScans();
@@ -105,54 +105,57 @@ public class ScannerService extends Service {
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    mScanning = false;
-                    mLEScanner.flushPendingScanResults(mScanCallback);
-                    mLEScanner.stopScan(mScanCallback);
-                    Log.i(TAG, "Scanner stopped");
+                    stopScanAndProcessResults();
                 }
             }, SCAN_PERIOD);
 
-            mScanning = true;
+            resetCachedSampleData();
             mLEScanner.startScan(scanFilters, settings, mScanCallback);
 
 
         } else {
-            mScanning = false;
-            mLEScanner.flushPendingScanResults(mScanCallback);
-            mLEScanner.stopScan(mScanCallback);
-            Log.i(TAG, "Scanner stopped");
+            stopScanAndProcessResults();
         }
 
+    }
+
+    private void resetCachedSampleData() {
+        deviceNr8 = null; // reset samples!
+        deviceNr9 = null; // reset samples!
+    }
+
+    private boolean hasSampleData() {
+        return deviceNr8 != null && deviceNr9 != null;
+    }
+
+
+    private void stopScanAndProcessResults() {
+        mLEScanner.flushPendingScanResults(mScanCallback);
+        mLEScanner.stopScan(mScanCallback);
+        Log.i(TAG, "Scanner stopped");
+        process();
     }
 
     private ScanCallback mScanCallback = new ScanCallback() {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
-            Log.i(TAG, "onScanResult: callbackType = " + String.valueOf(callbackType));
-            Log.i(TAG, "onScanResult: result = " + result.toString());
+            Log.i(TAG, "onScanResult: Result = " + result.toString());
+            cacheSample(result);
         }
 
         @Override
         public void onBatchScanResults(List<ScanResult> results) {
-            Date now = new Date();
-
-            Sample deviceNr8 = null;
-            Sample deviceNr9 = null;
             for (ScanResult result : results) {
-                Log.i(TAG, "onBachScanResult: Results" + result.toString());
-
-                if (DEVICE_NO8_MAC_ADDRESS.equals(result.getDevice().getAddress())) {
-                    deviceNr8 = parse(result.getScanRecord(), now);
-                } else if (DEVICE_NO9_MAC_ADDRESS.equals(result.getDevice().getAddress())) {
-                    deviceNr9 = parse(result.getScanRecord(), now);
-                }
-
+                Log.i(TAG, "onBachScanResult: Result = " + result.toString());
+                cacheSample(result);
             }
+        }
 
-            if (deviceNr8 == null || deviceNr9 == null) {
-                Log.w(TAG, "Did not receive results from both devices! DeviceNo8="+deviceNr8 + ", DeviceNo9="+deviceNr9);
-            } else {
-                process(deviceNr8, deviceNr9);
+        private void cacheSample(ScanResult result) {
+            if (DEVICE_NO8_MAC_ADDRESS.equals(result.getDevice().getAddress())) {
+                deviceNr8 = parse(result.getScanRecord(), new Date());
+            } else if (DEVICE_NO9_MAC_ADDRESS.equals(result.getDevice().getAddress())) {
+                deviceNr9 = parse(result.getScanRecord(), new Date());
             }
         }
 
@@ -162,9 +165,14 @@ public class ScannerService extends Service {
         }
     };
 
-    private void process(final Sample sampleDeviceNo8, final Sample sampleDeviceNo9) {
-        Log.i(TAG, "Processing samples\n"+sampleDeviceNo8+"\n"+sampleDeviceNo9);
-        UploadService.startUpload(this, sampleDeviceNo8, sampleDeviceNo9);
+    private void process() {
+        if (hasSampleData()) {
+            Date timestamp = deviceNr8.getTimestamp();
+            Log.i(TAG, "Processing samples timestamp=" + timestamp + "\n" + deviceNr8 + "\n" + deviceNr9);
+            UploadService.startUpload(this, timestamp, deviceNr8, deviceNr9);
+        } else {
+            Log.w(TAG, "Did not receive results from both devices! DeviceNo8=" + deviceNr8 + ", DeviceNo9=" + deviceNr9);
+        }
     }
 
     private void enableBT() {

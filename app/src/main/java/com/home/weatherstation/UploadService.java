@@ -25,6 +25,7 @@ public class UploadService extends IntentService {
 
     private static final String ACTION_UPLOAD = "com.home.weatherstation.action.upload";
 
+    private static final String EXTRA_TIMESTAMP = "com.home.weatherstation.extra.timestamp";
     private static final String EXTRA_SAMPLE_DEVICE8 = "com.home.weatherstation.extra.sampledevice8";
     private static final String EXTRA_SAMPLE_DEVICE9 = "com.home.weatherstation.extra.sampledevice9";
 
@@ -32,6 +33,7 @@ public class UploadService extends IntentService {
 
     private static final String TEMPERATURE_TABLE_ID = "1jQ_Jnnw26pWU05sGBNdXbXlvxB-66_W4fuJgsTG7";
     private static final String API_KEY = "AIzaSyC6bt0RnAVIDwdj3eiSJBmrEPqTmQGDNkM";
+
 
     public UploadService() {
         super("UploadService");
@@ -43,7 +45,7 @@ public class UploadService extends IntentService {
      *
      * @see IntentService
      */
-    public static void startUpload(Context context, final Sample sampleDeviceNo8, final Sample sampleDeviceNo9) {
+    public static void startUpload(Context context, final Date timestamp, final Sample sampleDeviceNo8, final Sample sampleDeviceNo9) {
         if (sampleDeviceNo8 == null || sampleDeviceNo9 == null) {
             Log.w(TAG, "Not starting upload because not all parameters set. sampleDeviceNo8=" + sampleDeviceNo8 + ", sampleDeviceNo9=" + sampleDeviceNo9);
             return;
@@ -51,6 +53,7 @@ public class UploadService extends IntentService {
 
         Intent intent = new Intent(context, UploadService.class);
         intent.setAction(ACTION_UPLOAD);
+        intent.putExtra(EXTRA_TIMESTAMP, timestamp.getTime());
         intent.putExtra(EXTRA_SAMPLE_DEVICE8, sampleDeviceNo8);
         intent.putExtra(EXTRA_SAMPLE_DEVICE9, sampleDeviceNo9);
         context.startService(intent);
@@ -62,18 +65,19 @@ public class UploadService extends IntentService {
         if (intent != null) {
             final String action = intent.getAction();
             if (ACTION_UPLOAD.equals(action)) {
+                final Date timestamp = new Date(intent.getLongExtra(EXTRA_TIMESTAMP, System.currentTimeMillis()));
                 final Sample sampleDevice8 = intent.getParcelableExtra(EXTRA_SAMPLE_DEVICE8);
                 final Sample sampleDevice9 = intent.getParcelableExtra(EXTRA_SAMPLE_DEVICE9);
-                upload(sampleDevice8, sampleDevice9);
+                upload(timestamp, sampleDevice8, sampleDevice9);
             } else {
                 Log.w(TAG, "Unknown action: " + action);
             }
         }
     }
 
-    private void upload(Sample deviceNo8, Sample deviceNo9) {
+    private void upload(Date timestamp, Sample deviceNo8, Sample deviceNo9) {
         try {
-            insert(TEMPERATURE_TABLE_ID, deviceNo8.getTimestamp(), deviceNo8.getTempCurrent(), deviceNo9.getTempCurrent());
+            insert(TEMPERATURE_TABLE_ID, timestamp, deviceNo8.getTempCurrent(), deviceNo9.getTempCurrent());
         } catch (IOException e) {
             Log.e(TAG, "Could not insert temperature data!", e);
         }
