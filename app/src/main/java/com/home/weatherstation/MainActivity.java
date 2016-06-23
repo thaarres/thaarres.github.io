@@ -11,9 +11,15 @@ import android.widget.TextView;
 public class MainActivity extends AppCompatActivity {
 
 
-    Button startButton;
-    Button stopButton;
-    TextView status;
+    Button startSchedulerButton;
+    Button stopSchedulerButton;
+    TextView schedulerStatus;
+
+    TextView lastScanTime;
+    TextView lastSuccessfulScanTime;
+    TextView lastUploadTime;
+
+    Button scanAndUploadNowButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,17 +27,17 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
 
-        status = (TextView) findViewById(R.id.status);
-        startButton = (Button) findViewById(R.id.start_button);
-        startButton.setOnClickListener(new View.OnClickListener() {
+        schedulerStatus = (TextView) findViewById(R.id.status);
+        startSchedulerButton = (Button) findViewById(R.id.start_button);
+        startSchedulerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 tryAuthActivity();
 //                start();
             }
         });
-        stopButton = (Button) findViewById(R.id.stop_button);
-        status = (TextView) findViewById(R.id.status);
+        stopSchedulerButton = (Button) findViewById(R.id.stop_button);
+        schedulerStatus = (TextView) findViewById(R.id.status);
 
 
     }
