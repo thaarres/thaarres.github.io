@@ -21,12 +21,6 @@ public class AuthActivity extends Activity {
     private AuthPreferences authPreferences;
     private AccountManager accountManager;
 
-    /**
-     * change this depending on the scope needed for the things you do in
-     * doCoolAuthenticatedStuff()
-     */
-    private final String SCOPE = "https://www.googleapis.com/auth/fusiontables";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,6 +61,11 @@ public class AuthActivity extends Activity {
             }
         }
 
+        /**
+         * change this depending on the scope needed for the things you do in
+         * doCoolAuthenticatedStuff()
+         */
+        String SCOPE = "https://www.googleapis.com/auth/fusiontables";
         accountManager.getAuthToken(userAccount, "oauth2:" + SCOPE, null, this,
                 new OnTokenAcquired(), null);
     }
@@ -128,7 +127,4 @@ public class AuthActivity extends Activity {
             }
         }
     }
-
-
-
 }

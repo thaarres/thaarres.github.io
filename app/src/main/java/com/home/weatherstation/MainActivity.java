@@ -1,25 +1,31 @@
 package com.home.weatherstation;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
 
+    public static final String RESULTS_FILTER = "results";
 
-    Button startSchedulerButton;
-    Button stopSchedulerButton;
-    TextView schedulerStatus;
+    private static final String TAG = MainActivity.class.getSimpleName();
 
-    TextView lastScanTime;
-    TextView lastSuccessfulScanTime;
-    TextView lastUploadTime;
+    private Button startSchedulerButton;
+    private Button stopSchedulerButton;
+    private TextView schedulerStatus;
 
-    Button scanAndUploadNowButton;
+    private TextView lastScanTime;
+    private TextView lastSuccessfulScanTime;
+    private TextView lastUploadTime;
+
+    private Button scanAndUploadNowButton;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,18 +38,45 @@ public class MainActivity extends AppCompatActivity {
         startSchedulerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                tryAuthActivity();
 //                start();
             }
         });
         stopSchedulerButton = (Button) findViewById(R.id.stop_button);
-        schedulerStatus = (TextView) findViewById(R.id.status);
+        stopSchedulerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+//                stop();
+            }
+        });
 
+        scanAndUploadNowButton = (Button) findViewById(R.id.scan_now_button);
+        scanAndUploadNowButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                scanAndUploadNow();
+            }
+        });
 
+        lastScanTime = (TextView) findViewById(R.id.last_scan_attempt_time);
+        lastSuccessfulScanTime = (TextView) findViewById(R.id.last_scan_success_time);
+        lastUploadTime = (TextView) findViewById(R.id.last_upload_success_time);
+
+        enableButtons(false);
+
+        startActivityForResult(new Intent(this, AuthActivity.class), 2001);
     }
 
-    private void tryAuthActivity() {
-        startActivityForResult(new Intent(this, AuthActivity.class), 2001);
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Storage.registerChangeListener(this, this);
+        updateStatusResults();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Storage.unregisterChangeListener(this, this);
     }
 
     @Override
@@ -51,26 +84,48 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 2001) {
             if (resultCode == RESULT_OK) {
-                start();
+                enableButtons(true);
+                Toast.makeText(this, "Authentication successful. Ready to upload ...", Toast.LENGTH_LONG).show();
+            } else {
+                enableButtons(false);
+                Toast.makeText(this, "Authentication FAILED. Clear the data of the App and try again ...", Toast.LENGTH_LONG).show();
             }
         }
     }
 
+    private void enableButtons(boolean enabled) {
+        startSchedulerButton.setEnabled(enabled);
+        stopSchedulerButton.setEnabled(enabled);
+        scanAndUploadNowButton.setEnabled(enabled);
+    }
+
+    private void scanAndUploadNow() {
+        Intent serviceIntent = new Intent(this, ScannerService.class);
+        serviceIntent.setAction(ScannerService.SCAN_AND_UPLOAD);
+        startService(serviceIntent);
+    }
+
     private void start() {
         Intent serviceIntent = new Intent(this, ScannerService.class);
-        serviceIntent.setAction(ScannerService.INITIALIZE);
+        serviceIntent.setAction(ScannerService.START_SCHEDULER);
         startService(serviceIntent);
-
-        Intent scanIntent = new Intent(this, ScannerService.class);
-        scanIntent.setAction(ScannerService.SCAN);
-        this.startService(scanIntent);
     }
 
     private void stop() {
         Intent serviceIntent = new Intent(this, ScannerService.class);
-        serviceIntent.setAction(ScannerService.STOP);
+        serviceIntent.setAction(ScannerService.STOP_SCHEDULER);
         startService(serviceIntent);
 
     }
 
+    private void updateStatusResults() {
+        lastScanTime.setText(android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", Storage.readLastScanTime(this)));
+        lastSuccessfulScanTime.setText(android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", Storage.readLastSuccessfulScanTime(this)));
+        lastUploadTime.setText(android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", Storage.readLastUploadTime(this)));
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
+        updateStatusResults();
+    }
 }

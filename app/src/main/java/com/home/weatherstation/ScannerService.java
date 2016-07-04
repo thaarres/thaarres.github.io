@@ -23,13 +23,15 @@ import java.util.Date;
 import java.util.List;
 
 public class ScannerService extends Service {
-    public static final String INITIALIZE = "com.home.weatherstation.action.initialize";
-    public static final String SCAN = "com.home.weatherstation.action.scan";
-    public static final String STOP = "com.home.weatherstation.action.stop";
+    public static final String START_SCHEDULER = "com.home.weatherstation.action.start_scheduled_scans";
+    public static final String STOP_SCHEDULER = "com.home.weatherstation.action.stop_scheduled_scans";
+    public static final String SCAN_AND_UPLOAD = "com.home.weatherstation.action.scan_and_upload";
+
     private static final String TAG = ScannerService.class.getSimpleName();
 
     private static final String DEVICE_NO8_MAC_ADDRESS = "D3:60:FB:B2:D1:39";
     private static final String DEVICE_NO9_MAC_ADDRESS = "FA:67:91:00:D7:B2";
+
 
     private BluetoothLeScanner mLEScanner;
     private ScanSettings settings;
@@ -76,14 +78,16 @@ public class ScannerService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         String action;
         if (intent == null) {
-            action = INITIALIZE;
+            action = START_SCHEDULER;
         } else {
             action = intent.getAction();
         }
 
-        if (INITIALIZE.equals(action)) {
+        if (START_SCHEDULER.equals(action)) {
             scheduleScans();
-        } else if (SCAN.equals(action)) {
+        } else if (STOP_SCHEDULER.equals(action)) {
+            cancelScans();
+        } else if (SCAN_AND_UPLOAD.equals(action)) {
             scanAndUpload();
         }
 
@@ -93,6 +97,10 @@ public class ScannerService extends Service {
 
     private void scheduleScans() {
         Log.i(TAG, "Scheduling scans ...");
+        // TODO schedule on top of the hour and every half hour
+    }
+    private void cancelScans() {
+        Log.i(TAG, "Canceling scans ...");
     }
 
     private void scanAndUpload() {
@@ -111,8 +119,6 @@ public class ScannerService extends Service {
 
             resetCachedSampleData();
             mLEScanner.startScan(scanFilters, settings, mScanCallback);
-
-
         } else {
             stopScanAndProcessResults();
         }
@@ -166,7 +172,11 @@ public class ScannerService extends Service {
     };
 
     private void process() {
+        long now = System.currentTimeMillis();
+        Storage.storeLastScanTime(getBaseContext(), now);
+
         if (hasSampleData()) {
+            Storage.storeLastSuccessfulScanTime(getBaseContext(), now);
             Date timestamp = deviceNr8.getTimestamp();
             Log.i(TAG, "Processing samples timestamp=" + timestamp + "\n" + deviceNr8 + "\n" + deviceNr9);
             UploadService.startUpload(this, timestamp, deviceNr8, deviceNr9);
