@@ -1,5 +1,7 @@
 package com.home.weatherstation;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
@@ -39,12 +41,37 @@ public class ScannerService extends Service {
 
     private Handler mHandler;
 
+    private AlarmManager alarmMgr;
+    private PendingIntent alarmIntent;
+
     // results from scanner, poor mans simple caching approach...
     Sample deviceNr8 = null;
     Sample deviceNr9 = null;
 
     // Stops scanning after 20 seconds.
     private static final long SCAN_PERIOD = 20000;
+    private Runnable stopScanAndProcessRunnable = new Runnable() {
+        @Override
+        public void run() {
+            stopScanAndProcessResults();
+        }
+    };
+
+    public static Intent buildStartSchedulerIntent(Context context) {
+        Intent serviceIntent = new Intent(context, ScannerService.class);
+        serviceIntent.setAction(ScannerService.START_SCHEDULER);
+        return serviceIntent;
+    }
+    public static Intent buildStopSchedulerIntent(Context context) {
+        Intent serviceIntent = new Intent(context, ScannerService.class);
+        serviceIntent.setAction(ScannerService.STOP_SCHEDULER);
+        return serviceIntent;
+    }
+    public static Intent buildScanAndUploadIntent(Context context) {
+        Intent serviceIntent = new Intent(context, ScannerService.class);
+        serviceIntent.setAction(ScannerService.SCAN_AND_UPLOAD);
+        return serviceIntent;
+    }
 
     public ScannerService() {
     }
@@ -57,6 +84,8 @@ public class ScannerService extends Service {
 
     @Override
     public void onCreate() {
+        alarmMgr = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+
         mHandler = new Handler();
 
         // Initializes Bluetooth adapter.
@@ -97,6 +126,7 @@ public class ScannerService extends Service {
 
     private void scheduleScans() {
         Log.i(TAG, "Scheduling scans ...");
+        alarmIntent = PendingIntent.getBroadcast(this, 0, buildScanAndUploadIntent(this), PendingIntent.FLAG_UPDATE_CURRENT);
         // TODO schedule on top of the hour and every half hour
     }
     private void cancelScans() {
@@ -104,18 +134,26 @@ public class ScannerService extends Service {
     }
 
     private void scanAndUpload() {
-        scanLeDevice(true);
+        Authenticator authenticator = new Authenticator(getBaseContext());
+        authenticator.invalidateToken();
+        authenticator.requestToken(new AuthenticatorCallback() {
+            @Override
+            public void doCoolAuthenticatedStuff() {
+                scanLeDevice(true);
+            }
+
+            @Override
+            public void failed() {
+                Log.e(TAG, "Could not start scan because authentication failed!");
+            }
+        });
+
     }
 
     private void scanLeDevice(final boolean enable) {
         if (enable) {
             // Stops scanning after a pre-defined scan period.
-            mHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    stopScanAndProcessResults();
-                }
-            }, SCAN_PERIOD);
+            mHandler.postDelayed(stopScanAndProcessRunnable, SCAN_PERIOD);
 
             resetCachedSampleData();
             mLEScanner.startScan(scanFilters, settings, mScanCallback);
@@ -162,6 +200,10 @@ public class ScannerService extends Service {
                 deviceNr8 = parse(result.getScanRecord(), new Date());
             } else if (DEVICE_NO9_MAC_ADDRESS.equals(result.getDevice().getAddress())) {
                 deviceNr9 = parse(result.getScanRecord(), new Date());
+            }
+            if (hasSampleData()) {
+                mHandler.removeCallbacks(stopScanAndProcessRunnable);
+                stopScanAndProcessResults();
             }
         }
 
@@ -211,4 +253,8 @@ public class ScannerService extends Service {
         return new Sample(date, record.getDeviceName(), (float) tempCurrent / 10, (float) tempLowest / 10, (float) tempHighest / 10, (int) humidity, (int) pressure);
     }
 
+
+    public static boolean isSchedulerOn(Context context) {
+        return PendingIntent.getBroadcast(context, 0, buildScanAndUploadIntent(context), PendingIntent.FLAG_NO_CREATE) != null;
+    }
 }

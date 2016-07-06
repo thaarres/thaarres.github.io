@@ -73,15 +73,28 @@ public class UploadService extends IntentService {
     }
 
     private void upload(Date timestamp, Sample deviceNo8, Sample deviceNo9) {
-        try {
-            insert(TEMPERATURE_TABLE_ID, timestamp, deviceNo8.getTempCurrent(), deviceNo9.getTempCurrent());
-            Storage.storeLastUploadTime(getBaseContext(), System.currentTimeMillis());
-        } catch (IOException e) {
-            Log.e(TAG, "Could not insert temperature data!", e);
+        int tries = 0;
+        while (tries < 4) {
+            tries++;
+            try {
+                insert(TEMPERATURE_TABLE_ID, timestamp, deviceNo8.getTempCurrent(), deviceNo9.getTempCurrent());
+                Storage.storeLastUploadTime(getBaseContext(), System.currentTimeMillis());
+                return;
+            } catch (IOException e) {
+                Log.e(TAG, "Could not insert temperature data!", e);
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                }
+            }
         }
     }
 
-    public void insert(String tableId, Date timestamp, float temperatureDevice8, float temperatureDevice9) throws IOException {
+    /**
+     * Make sure there is a valid token available. See @link{com.home.weatherstation.Authenticator}
+     */
+    private void insert(String tableId, Date timestamp, float temperatureDevice8, float temperatureDevice9) throws IOException {
 
         // Encode the query
         String query = URLEncoder.encode("INSERT INTO " + tableId + " (Date,DeviceNo8,DeviceNo9) "
@@ -92,10 +105,10 @@ public class UploadService extends IntentService {
         conn.setRequestProperty("Authorization", "Bearer " + getToken());
 
         // read the response
-        System.out.println("Response Code: " + conn.getResponseCode());
+        Log.i(TAG, "Response Code: " + conn.getResponseCode());
         InputStream in = new BufferedInputStream(conn.getInputStream());
         String response = org.apache.commons.io.IOUtils.toString(in, "UTF-8");
-        System.out.println(response);
+        Log.v(TAG, response);
 
     }
 

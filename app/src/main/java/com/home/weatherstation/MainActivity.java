@@ -12,8 +12,6 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
 
-    public static final String RESULTS_FILTER = "results";
-
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private Button startSchedulerButton;
@@ -32,20 +30,19 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
         schedulerStatus = (TextView) findViewById(R.id.status);
         startSchedulerButton = (Button) findViewById(R.id.start_button);
         startSchedulerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                start();
+                start();
             }
         });
         stopSchedulerButton = (Button) findViewById(R.id.stop_button);
         stopSchedulerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                stop();
+                stop();
             }
         });
 
@@ -71,6 +68,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         super.onResume();
         Storage.registerChangeListener(this, this);
         updateStatusResults();
+        updateStatusScheduler();
     }
 
     @Override
@@ -100,22 +98,22 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     }
 
     private void scanAndUploadNow() {
-        Intent serviceIntent = new Intent(this, ScannerService.class);
-        serviceIntent.setAction(ScannerService.SCAN_AND_UPLOAD);
-        startService(serviceIntent);
+        startService(ScannerService.buildScanAndUploadIntent(this));
     }
 
     private void start() {
-        Intent serviceIntent = new Intent(this, ScannerService.class);
-        serviceIntent.setAction(ScannerService.START_SCHEDULER);
-        startService(serviceIntent);
+//        startService(ScannerService.buildStartSchedulerIntent(this));
+//        updateStatusScheduler();
     }
 
     private void stop() {
-        Intent serviceIntent = new Intent(this, ScannerService.class);
-        serviceIntent.setAction(ScannerService.STOP_SCHEDULER);
-        startService(serviceIntent);
+//        startService(ScannerService.buildStopSchedulerIntent(this));
+//        updateStatusScheduler();
+    }
 
+    private void updateStatusScheduler() {
+        boolean schedulerOn = ScannerService.isSchedulerOn(this);
+        schedulerStatus.setText(schedulerOn ? "ON" : "OFF");
     }
 
     private void updateStatusResults() {
