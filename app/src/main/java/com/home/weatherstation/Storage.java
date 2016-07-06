@@ -30,6 +30,10 @@ public class Storage {
         return read(context, "last_upload_time");
     }
 
+    public static void storeNextScheduledScanTime(Context context, long timestamp) {
+        write(context, "next_scheduled_scan_time", timestamp);
+    }
+
     public static void storeLastScanTime(Context context, long timestamp) {
         write(context, "last_scan_time", timestamp);
     }

@@ -21,6 +21,7 @@ import android.util.Log;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -62,11 +63,19 @@ public class ScannerService extends Service {
         serviceIntent.setAction(ScannerService.START_SCHEDULER);
         return serviceIntent;
     }
+
     public static Intent buildStopSchedulerIntent(Context context) {
         Intent serviceIntent = new Intent(context, ScannerService.class);
         serviceIntent.setAction(ScannerService.STOP_SCHEDULER);
         return serviceIntent;
     }
+
+    public static Intent buildScanAndUploadAndScheduleNextIntent(Context context) {
+        Intent serviceIntent = buildScanAndUploadIntent(context);
+        serviceIntent.putExtra("schedule_next", true);
+        return serviceIntent;
+    }
+
     public static Intent buildScanAndUploadIntent(Context context) {
         Intent serviceIntent = new Intent(context, ScannerService.class);
         serviceIntent.setAction(ScannerService.SCAN_AND_UPLOAD);
@@ -106,31 +115,65 @@ public class ScannerService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String action;
+        boolean scheduleNext;
         if (intent == null) {
             action = START_SCHEDULER;
+            scheduleNext = false;
         } else {
             action = intent.getAction();
+            scheduleNext = intent.hasExtra("schedule_next");
         }
 
         if (START_SCHEDULER.equals(action)) {
-            scheduleScans();
+            scheduleNextScanAndUpload();
         } else if (STOP_SCHEDULER.equals(action)) {
-            cancelScans();
+            cancelNextScanAndUpload();
         } else if (SCAN_AND_UPLOAD.equals(action)) {
             scanAndUpload();
+            if (scheduleNext) {
+                scheduleNextScanAndUpload();
+            }
         }
 
         return START_REDELIVER_INTENT;
     }
 
 
-    private void scheduleScans() {
-        Log.i(TAG, "Scheduling scans ...");
-        alarmIntent = PendingIntent.getBroadcast(this, 0, buildScanAndUploadIntent(this), PendingIntent.FLAG_UPDATE_CURRENT);
-        // TODO schedule on top of the hour and every half hour
+    private void scheduleNextScanAndUpload() {
+        Log.i(TAG, "Scheduling next scan ...");
+        alarmIntent = PendingIntent.getService(this, 0, buildScanAndUploadAndScheduleNextIntent(this), 0);
+        long triggerTime = calculateNextHalfHourInMillis();
+        alarmMgr.setAlarmClock(new AlarmManager.AlarmClockInfo(triggerTime, PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), 0)), alarmIntent);
+        Log.i(TAG, "Next scan scheduled at " + new Date(triggerTime));
+        Storage.storeNextScheduledScanTime(this, triggerTime);
     }
-    private void cancelScans() {
-        Log.i(TAG, "Canceling scans ...");
+
+    private static long calculateNextHalfHourInMillis() {
+        Calendar cal = Calendar.getInstance();
+        int currentHourOfDay = cal.get(Calendar.HOUR_OF_DAY);
+        int currentMinuteOfHour = cal.get(Calendar.MINUTE);
+
+        cal.set(Calendar.MINUTE, 0); // reset to 00m:00s
+        cal.set(Calendar.SECOND, 0);
+
+        if (currentMinuteOfHour >= 0 && currentMinuteOfHour < 30) {
+            cal.add(Calendar.MINUTE, 30);
+        } else if (currentMinuteOfHour >= 30 && currentMinuteOfHour <= 59) {
+            cal.add(Calendar.HOUR, 1);
+        } else {
+            throw new IllegalArgumentException("currentHour=" + currentHourOfDay + ", currentMin=" + currentMinuteOfHour);
+        }
+
+        return cal.getTimeInMillis();
+    }
+
+    private void cancelNextScanAndUpload() {
+        if (alarmIntent != null) {
+            Log.i(TAG, "Canceling scans ...");
+            alarmMgr.cancel(alarmIntent);
+            alarmIntent.cancel();
+            alarmIntent = null;
+        }
     }
 
     private void scanAndUpload() {
@@ -254,7 +297,8 @@ public class ScannerService extends Service {
     }
 
 
-    public static boolean isSchedulerOn(Context context) {
-        return PendingIntent.getBroadcast(context, 0, buildScanAndUploadIntent(context), PendingIntent.FLAG_NO_CREATE) != null;
+    public static long getNextScheduled(Context context) {
+        AlarmManager.AlarmClockInfo nextAlarmClock = ((AlarmManager) context.getSystemService(Context.ALARM_SERVICE)).getNextAlarmClock();
+        return nextAlarmClock != null ? nextAlarmClock.getTriggerTime() : -1;
     }
 }

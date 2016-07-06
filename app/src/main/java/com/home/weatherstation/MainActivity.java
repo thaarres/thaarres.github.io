@@ -3,11 +3,14 @@ package com.home.weatherstation;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.Date;
 
 
 public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
@@ -67,8 +70,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     protected void onResume() {
         super.onResume();
         Storage.registerChangeListener(this, this);
-        updateStatusResults();
-        updateStatusScheduler();
+        updateViews();
     }
 
     @Override
@@ -102,18 +104,28 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     }
 
     private void start() {
-//        startService(ScannerService.buildStartSchedulerIntent(this));
-//        updateStatusScheduler();
+        startService(ScannerService.buildStartSchedulerIntent(this));
+        updateStatusScheduler();
     }
 
     private void stop() {
-//        startService(ScannerService.buildStopSchedulerIntent(this));
-//        updateStatusScheduler();
+        startService(ScannerService.buildStopSchedulerIntent(this));
+        updateStatusScheduler();
+    }
+
+    private void updateViews() {
+        updateStatusResults();
+        updateStatusScheduler();
     }
 
     private void updateStatusScheduler() {
-        boolean schedulerOn = ScannerService.isSchedulerOn(this);
-        schedulerStatus.setText(schedulerOn ? "ON" : "OFF");
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                long nextTriggerTime = ScannerService.getNextScheduled(MainActivity.this);
+                schedulerStatus.setText(nextTriggerTime > -1 ? "Next scan at:\n" + new Date(nextTriggerTime).toString() : "OFF\nNo scan scheduled.");
+            }
+        }, 1000);
     }
 
     private void updateStatusResults() {
@@ -124,6 +136,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
-        updateStatusResults();
+        updateViews();
     }
 }
