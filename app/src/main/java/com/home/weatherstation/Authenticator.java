@@ -18,8 +18,8 @@ public class Authenticator {
     // change SCOPE depending on the scope needed for the things you do after you have a token
     private static final String SCOPE = "https://www.googleapis.com/auth/fusiontables";
 
-    private AuthPreferences authPreferences;
-    private AccountManager accountManager;
+    private final AuthPreferences authPreferences;
+    private final AccountManager accountManager;
 
     public Authenticator(final Context context) {
         accountManager = AccountManager.get(context);
@@ -69,7 +69,7 @@ public class Authenticator {
     private class OnTokenAcquired implements AccountManagerCallback<Bundle> {
 
         private final String tag = OnTokenAcquired.class.getSimpleName();
-        private AuthenticatorCallback callback;
+        private final AuthenticatorCallback callback;
 
         public OnTokenAcquired(AuthenticatorCallback callback) {
             this.callback = callback;

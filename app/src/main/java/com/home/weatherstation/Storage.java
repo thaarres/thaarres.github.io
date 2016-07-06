@@ -1,5 +1,6 @@
 package com.home.weatherstation;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 
@@ -56,6 +57,7 @@ public class Storage {
         return getPrefs(context).getLong(key, -1);
     }
 
+    @SuppressLint("CommitPrefEdits")
     private static void write(Context context, String key, long value) {
         SharedPreferences.Editor editor = getPrefs(context).edit();
         editor.putLong(key, value);

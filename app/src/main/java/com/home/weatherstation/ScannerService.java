@@ -26,9 +26,9 @@ import java.util.Date;
 import java.util.List;
 
 public class ScannerService extends Service {
-    public static final String START_SCHEDULER = "com.home.weatherstation.action.start_scheduled_scans";
-    public static final String STOP_SCHEDULER = "com.home.weatherstation.action.stop_scheduled_scans";
-    public static final String SCAN_AND_UPLOAD = "com.home.weatherstation.action.scan_and_upload";
+    private static final String START_SCHEDULER = "com.home.weatherstation.action.start_scheduled_scans";
+    private static final String STOP_SCHEDULER = "com.home.weatherstation.action.stop_scheduled_scans";
+    private static final String SCAN_AND_UPLOAD = "com.home.weatherstation.action.scan_and_upload";
 
     private static final String TAG = ScannerService.class.getSimpleName();
 
@@ -38,7 +38,7 @@ public class ScannerService extends Service {
 
     private BluetoothLeScanner mLEScanner;
     private ScanSettings settings;
-    private List<ScanFilter> scanFilters = new ArrayList<>();
+    private final List<ScanFilter> scanFilters = new ArrayList<>();
 
     private Handler mHandler;
 
@@ -46,12 +46,12 @@ public class ScannerService extends Service {
     private PendingIntent alarmIntent;
 
     // results from scanner, poor mans simple caching approach...
-    Sample deviceNr8 = null;
-    Sample deviceNr9 = null;
+    private Sample deviceNr8 = null;
+    private Sample deviceNr9 = null;
 
     // Stops scanning after 20 seconds.
     private static final long SCAN_PERIOD = 20000;
-    private Runnable stopScanAndProcessRunnable = new Runnable() {
+    private final Runnable stopScanAndProcessRunnable = new Runnable() {
         @Override
         public void run() {
             stopScanAndProcessResults();
@@ -70,7 +70,7 @@ public class ScannerService extends Service {
         return serviceIntent;
     }
 
-    public static Intent buildScanAndUploadAndScheduleNextIntent(Context context) {
+    private static Intent buildScanAndUploadAndScheduleNextIntent(Context context) {
         Intent serviceIntent = buildScanAndUploadIntent(context);
         serviceIntent.putExtra("schedule_next", true);
         return serviceIntent;
@@ -182,7 +182,7 @@ public class ScannerService extends Service {
         authenticator.requestToken(new AuthenticatorCallback() {
             @Override
             public void doCoolAuthenticatedStuff() {
-                scanLeDevice(true);
+                scanLeDevice();
             }
 
             @Override
@@ -193,17 +193,12 @@ public class ScannerService extends Service {
 
     }
 
-    private void scanLeDevice(final boolean enable) {
-        if (enable) {
-            // Stops scanning after a pre-defined scan period.
-            mHandler.postDelayed(stopScanAndProcessRunnable, SCAN_PERIOD);
+    private void scanLeDevice() {
+        // Stops scanning after a pre-defined scan period.
+        mHandler.postDelayed(stopScanAndProcessRunnable, SCAN_PERIOD);
 
-            resetCachedSampleData();
-            mLEScanner.startScan(scanFilters, settings, mScanCallback);
-        } else {
-            stopScanAndProcessResults();
-        }
-
+        resetCachedSampleData();
+        mLEScanner.startScan(scanFilters, settings, mScanCallback);
     }
 
     private void resetCachedSampleData() {
@@ -223,7 +218,7 @@ public class ScannerService extends Service {
         process();
     }
 
-    private ScanCallback mScanCallback = new ScanCallback() {
+    private final ScanCallback mScanCallback = new ScanCallback() {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             Log.i(TAG, "onScanResult: Result = " + result.toString());

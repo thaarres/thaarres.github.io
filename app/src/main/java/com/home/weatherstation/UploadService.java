@@ -77,7 +77,7 @@ public class UploadService extends IntentService {
         while (tries < 4) {
             tries++;
             try {
-                insert(TEMPERATURE_TABLE_ID, timestamp, deviceNo8.getTempCurrent(), deviceNo9.getTempCurrent());
+                insert(timestamp, deviceNo8.getTempCurrent(), deviceNo9.getTempCurrent());
                 Storage.storeLastUploadTime(getBaseContext(), System.currentTimeMillis());
                 return;
             } catch (IOException e) {
@@ -94,10 +94,10 @@ public class UploadService extends IntentService {
     /**
      * Make sure there is a valid token available. See @link{com.home.weatherstation.Authenticator}
      */
-    private void insert(String tableId, Date timestamp, float temperatureDevice8, float temperatureDevice9) throws IOException {
+    private void insert(Date timestamp, float temperatureDevice8, float temperatureDevice9) throws IOException {
 
         // Encode the query
-        String query = URLEncoder.encode("INSERT INTO " + tableId + " (Date,DeviceNo8,DeviceNo9) "
+        String query = URLEncoder.encode("INSERT INTO " + TEMPERATURE_TABLE_ID + " (Date,DeviceNo8,DeviceNo9) "
                 + "VALUES ('" + android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", timestamp) + "', " + temperatureDevice8 + ", " + temperatureDevice9 + ")");
         URL url = new URL("https://www.googleapis.com/fusiontables/v2/query?sql=" + query + "&key=" + API_KEY);
         HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();

@@ -15,8 +15,6 @@ import java.util.Date;
 
 public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
 
-    private static final String TAG = MainActivity.class.getSimpleName();
-
     private Button startSchedulerButton;
     private Button stopSchedulerButton;
     private TextView schedulerStatus;
