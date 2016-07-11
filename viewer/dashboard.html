@@ -3,7 +3,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="UTF-8">
 
-    <title>Home data</title>
+    <title>Weatherstation</title>
 
     <link href="https://google-developers.appspot.com/fusiontables/docs/samples/style/default.css"
           rel="stylesheet" type="text/css">
@@ -17,16 +17,6 @@
     <!-- Date Range Picker -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
-
-    <style type="text/css">
-        table {
-            width: 100%;
-        }
-
-        th {
-            text-align: left;
-        }
-    </style>
 
     <script type="text/javascript">
         google.load('visualization', '1', {
@@ -43,7 +33,6 @@
                     query += " FROM 1jQ_Jnnw26pWU05sGBNdXbXlvxB-66_W4fuJgsTG7";
                     break;
             }
-            //minDate = getFormatedDateWithDaysAgo(10);
             query += " WHERE Date >= '" + start + "' AND Date <= '" + end + "'";
             query += " ORDER BY Date DESC";
 
