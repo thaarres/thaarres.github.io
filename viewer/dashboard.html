@@ -80,7 +80,7 @@
             
         }
 
-        //google.setOnLoadCallback(draw);
+        google.setOnLoadCallback(draw);
 
         function toggleTable() {
             var div = document.getElementById('visualization_table_div');
@@ -135,7 +135,7 @@
                 </div>
                 <div class="col-md-3">
                     <!--<select id="datatype" onchange="draw();">-->
-                    <select id="datatype" class="form-control">
+                    <select id="datatype" class="form-control" disabled>
                         <option value="Temperature" selected="selected">Temperature</option>
                         <option value="Humidity">Humidity</option>
                         <option value="Pressure">Pressure</option>
