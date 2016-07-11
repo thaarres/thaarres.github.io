@@ -99,7 +99,7 @@
 
             function cb(start, end) {
                 $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
-                draw(start.format('MM/DD/YYYY'), end.format('MM/DD/YYYY'));
+                draw(start.format('YYYY-MM-DD HH:mm'), end.format('YYYY-MM-DD HH:mm'));
             }
 
             $('#reportrange').daterangepicker({
