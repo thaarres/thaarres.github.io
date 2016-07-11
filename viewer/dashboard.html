@@ -40,7 +40,7 @@
 
             var queryText = encodeURIComponent(query);
             drawChart(query);
-            drawVisualizationTable(query);
+            //drawVisualizationTable(query);
         }
 
         function drawVisualizationTable(query) {
@@ -147,22 +147,16 @@
         </div>
     </div>
     <div class="panel panel-success">
-        <!--<div class="panel-heading">-->
-            <!--<h3 class="panel-title">Weatherstation</h3>-->
-        <!--</div>-->
         <div class="panel-body">
             <div id="visualization_chart_div"></div>
         </div>
     </div>
-    <div class="panel panel-success">
-        <!--<div class="panel-heading">-->
-        <!--<h3 class="panel-title">Weatherstation</h3>-->
+    <!--<div class="panel panel-success">-->
+        <!--<div class="panel-body">-->
+            <!--<p><a href="#" onclick="toggleTable()">Show/Hide table</a></p>-->
+            <!--<div id="visualization_table_div" style="display:none;"></div>-->
         <!--</div>-->
-        <div class="panel-body">
-            <p><a href="#" onclick="toggleTable()">Show/Hide table</a></p>
-            <div id="visualization_table_div" style="display:none;"></div>
-        </div>
-    </div>
+    <!--</div>-->
 </div>
 </body>
 </html>
