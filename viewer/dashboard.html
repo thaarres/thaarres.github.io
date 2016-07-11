@@ -1,53 +1,66 @@
 <html>
-  <head>
+<head>
     <meta charset="UTF-8">
 
     <title>Home data</title>
 
-    <link href="https://google-developers.appspot.com/fusiontables/docs/samples/style/default.css" rel="stylesheet" type="text/css">
+    <link href="https://google-developers.appspot.com/fusiontables/docs/samples/style/default.css"
+          rel="stylesheet" type="text/css">
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-      
-    <style type="text/css">
-      table {
-        width: 100%;
-      }
 
-      th {
-        text-align: left;
-      }
+    <!-- Date Range Picker prerequisites-->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/bootstrap/latest/css/bootstrap.css" />
+    <!-- Date Range Picker -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
+
+    <style type="text/css">
+        table {
+            width: 100%;
+        }
+
+        th {
+            text-align: left;
+        }
     </style>
 
     <script type="text/javascript">
-      google.load('visualization', '1');
+        google.load('visualization', '1', {
+            packages: ['table', 'corechart']
+        });
 
-    google.charts.load("current", {packages:['table','corechart']});
-     
-      function draw() {
-          var query = "SELECT Date, DeviceNo8, DeviceNo9";
-          var datatype = document.getElementById('datatype').value;
-        switch (datatype) {
-            case 'Humidity':
-            case 'Pressure':
-            case 'Temperature':
-                query += " FROM 1jQ_Jnnw26pWU05sGBNdXbXlvxB-66_W4fuJgsTG7";
-                break;
+        function draw(start, end) {
+            var query = "SELECT Date, DeviceNo8, DeviceNo9";
+            var datatype = document.getElementById('datatype').value;
+            switch (datatype) {
+                case 'Humidity':
+                case 'Pressure':
+                case 'Temperature':
+                    query += " FROM 1jQ_Jnnw26pWU05sGBNdXbXlvxB-66_W4fuJgsTG7";
+                    break;
+            }
+            //minDate = getFormatedDateWithDaysAgo(10);
+            query += " WHERE Date >= '" + start + "' AND Date <= '" + end + "'";
+            query += " ORDER BY Date DESC";
+
+            //alert(query);
+
+            var queryText = encodeURIComponent(query);
+            drawChart(query);
+            drawVisualizationTable(query);
         }
-        query += " ORDER BY Date DESC";
-        
-        var queryText = encodeURIComponent(query);
-          drawChart(query);
-          drawVisualizationTable(query);
-      }
-        
+
         function drawVisualizationTable(query) {
-      google.visualization.drawChart({
-        "containerId": "visualization_table_div",
-        "dataSourceUrl": "http://www.google.com/fusiontables/gvizdata?tq=",
-        "query":query,
-        "chartType": "Table",
-        "options": {}
-     });
+            google.visualization.drawChart({
+                "containerId": "visualization_table_div",
+                "dataSourceUrl": "http://www.google.com/fusiontables/gvizdata?tq=",
+                "query":query,
+                "chartType": "Table",
+                "options": {}
+        });
     }
         
         function drawChart(query) {
@@ -66,20 +79,98 @@
             
         }
 
-      google.setOnLoadCallback(draw);
+        //google.setOnLoadCallback(draw);
+
+        function toggleTable() {
+            var div = document.getElementById('visualization_table_div');
+            if (div.style.display !== 'none') {
+                div.style.display = 'none';
+            }
+            else {
+                div.style.display = 'block';
+            }
+        };
+
+        $(function() {
+
+            var start = moment().subtract(5, 'days');
+            var end = moment();
+
+            function cb(start, end) {
+                $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+                draw(start.format('MM/DD/YYYY'), end.format('MM/DD/YYYY'));
+            }
+
+            $('#reportrange').daterangepicker({
+                startDate: start,
+                endDate: end,
+                ranges: {
+                   'Today': [moment(), moment()],
+                   'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                   'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                   'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                   'This Month': [moment().startOf('month'), moment().endOf('month')],
+                   'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                }
+            }, cb);
+
+            cb(start, end);
+
+        });
+
     </script>
 
-  </head>
-  <body>
-    <div>
-      <label>Datatype:</label>
-      <select id="datatype" onchange="draw();">
-        <option value="Temperature" selected="selected">Temperature</option>
-        <option value="Humidity">Humidity</option>
-        <option value="Pressure">Pressure</option>
-      </select>
+</head>
+<body style="margin:10;padding:0">
+    <div class="panel panel-success">
+        <div class="panel-heading">
+            <h3 class="panel-title">Weatherstation</h3>
+        </div>
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-md-1">
+                    <label>Datatype:</label>
+                </div>
+                <div class="col-md-3">
+                    <!--<select id="datatype" onchange="draw();">-->
+                    <select id="datatype" class="form-control">
+                        <option value="Temperature" selected="selected">Temperature</option>
+                        <option value="Humidity">Humidity</option>
+                        <option value="Pressure">Pressure</option>
+                    </select>
+                </div>
+            </div>
+            <br/>
+            <div class="row">
+                <div class="col-md-1">
+                    <label>Date range:</label>
+                </div>
+                <div class="col-md-3">
+                    <div id="reportrange" class="form-control">
+                    <!--<div id="reportrange" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc;">-->
+                        <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>&nbsp;
+                        <span></span> <b class="caret"></b>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div id="visualization_chart_div"></div>
-    <div id="visualization_table_div"></div>
-  </body>
+    <div class="panel panel-success">
+        <!--<div class="panel-heading">-->
+            <!--<h3 class="panel-title">Weatherstation</h3>-->
+        <!--</div>-->
+        <div class="panel-body">
+            <div id="visualization_chart_div"></div>
+        </div>
+    </div>
+    <div class="panel panel-success">
+        <!--<div class="panel-heading">-->
+        <!--<h3 class="panel-title">Weatherstation</h3>-->
+        <!--</div>-->
+        <div class="panel-body">
+            <p><a href="#" onclick="toggleTable()">Show/Hide table</a></p>
+            <div id="visualization_table_div" style="display:none;"></div>
+        </div>
+    </div>
+</body>
 </html>
