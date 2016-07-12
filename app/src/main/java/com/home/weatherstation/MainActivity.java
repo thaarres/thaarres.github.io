@@ -2,6 +2,7 @@ package com.home.weatherstation;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
@@ -58,6 +59,14 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         lastScanTime = (TextView) findViewById(R.id.last_scan_attempt_time);
         lastSuccessfulScanTime = (TextView) findViewById(R.id.last_scan_success_time);
         lastUploadTime = (TextView) findViewById(R.id.last_upload_success_time);
+
+        String version = "??";
+        try {
+            version = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        ((TextView) findViewById(R.id.version)).setText(version);
 
         enableButtons(false);
 

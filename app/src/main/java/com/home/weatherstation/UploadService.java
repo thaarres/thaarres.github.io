@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import org.json.JSONObject;
+
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,7 +31,9 @@ public class UploadService extends IntentService {
     private static final String EXTRA_SAMPLE_DEVICE9 = "com.home.weatherstation.extra.sampledevice9";
 
     private static final String TEMPERATURE_TABLE_ID = "1jQ_Jnnw26pWU05sGBNdXbXlvxB-66_W4fuJgsTG7";
-    private static final String API_KEY = "AIzaSyC6bt0RnAVIDwdj3eiSJBmrEPqTmQGDNkM";
+    private static final String API_KEY_GOOGLE = "AIzaSyC6bt0RnAVIDwdj3eiSJBmrEPqTmQGDNkM";
+
+    private static final String API_KEY_WUNDERGROUND = "6ad6fa3bdb22276d"; // https://www.wunderground.com/weather/api/d/6ad6fa3bdb22276d/edit.html
 
 
     public UploadService() {
@@ -65,19 +69,20 @@ public class UploadService extends IntentService {
                 final Date timestamp = new Date(intent.getLongExtra(EXTRA_TIMESTAMP, System.currentTimeMillis()));
                 final Sample sampleDevice8 = intent.getParcelableExtra(EXTRA_SAMPLE_DEVICE8);
                 final Sample sampleDevice9 = intent.getParcelableExtra(EXTRA_SAMPLE_DEVICE9);
-                upload(timestamp, sampleDevice8, sampleDevice9);
+                final Sample sampleOutside = fetchCurrentConditionsOutside();
+                upload(timestamp, sampleDevice8, sampleDevice9, sampleOutside);
             } else {
                 Log.w(TAG, "Unknown action: " + action);
             }
         }
     }
 
-    private void upload(Date timestamp, Sample deviceNo8, Sample deviceNo9) {
+    private void upload(Date timestamp, Sample deviceNo8, Sample deviceNo9, Sample sampleOutside) {
         int tries = 0;
         while (tries < 4) {
             tries++;
             try {
-                insert(timestamp, deviceNo8.getTempCurrent(), deviceNo9.getTempCurrent());
+                insert(timestamp, deviceNo8.getTempCurrent(), deviceNo9.getTempCurrent(), sampleOutside.getTempCurrent());
                 Storage.storeLastUploadTime(getBaseContext(), System.currentTimeMillis());
                 return;
             } catch (IOException e) {
@@ -91,15 +96,42 @@ public class UploadService extends IntentService {
         }
     }
 
+    private Sample fetchCurrentConditionsOutside() {
+        try {
+            URL url = new URL("https://api.wunderground.com/api/" + API_KEY_WUNDERGROUND + "/conditions/q/CH/Zurich.json");
+            HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+
+            // read the response
+            Log.i(TAG, "Response Code: " + conn.getResponseCode());
+            InputStream in = new BufferedInputStream(conn.getInputStream());
+            String response = org.apache.commons.io.IOUtils.toString(in, "UTF-8");
+            Log.v(TAG, response);
+
+            JSONObject obj = new JSONObject(response);
+            JSONObject currentObservation = obj.getJSONObject("current_observation");
+            Date d = new Date(currentObservation.getLong("observation_epoch") * 1000);
+            float tempCurrent = Float.valueOf(currentObservation.getString("temp_c"));
+            int relHumid = Integer.valueOf(currentObservation.getString("relative_humidity").replaceAll("%", ""));
+            int pressure = currentObservation.getInt("pressure_in");
+
+            return new Sample(d, "Outside", tempCurrent, 0, 0, relHumid, pressure);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new Sample(new Date(), "Outside", 0, 0, 0, 0, 0);
+        }
+
+    }
+
     /**
      * Make sure there is a valid token available. See @link{com.home.weatherstation.Authenticator}
      */
-    private void insert(Date timestamp, float temperatureDevice8, float temperatureDevice9) throws IOException {
+    private void insert(Date timestamp, float temperatureDevice8, float temperatureDevice9, float temperatureOutside) throws IOException {
 
         // Encode the query
-        String query = URLEncoder.encode("INSERT INTO " + TEMPERATURE_TABLE_ID + " (Date,DeviceNo8,DeviceNo9) "
-                + "VALUES ('" + android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", timestamp) + "', " + temperatureDevice8 + ", " + temperatureDevice9 + ")");
-        URL url = new URL("https://www.googleapis.com/fusiontables/v2/query?sql=" + query + "&key=" + API_KEY);
+        String query = URLEncoder.encode("INSERT INTO " + TEMPERATURE_TABLE_ID + " (Date,DeviceNo8,DeviceNo9,Outside) "
+                + "VALUES ('" + android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", timestamp) + "', " + temperatureDevice8 + ", " + temperatureDevice9 + ", " + temperatureOutside + ")");
+        URL url = new URL("https://www.googleapis.com/fusiontables/v2/query?sql=" + query + "&key=" + API_KEY_GOOGLE);
         HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Authorization", "Bearer " + getToken());
