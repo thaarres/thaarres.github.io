@@ -34,7 +34,7 @@ public class UploadService extends IntentService {
     private static final String API_KEY_GOOGLE = "AIzaSyC6bt0RnAVIDwdj3eiSJBmrEPqTmQGDNkM";
 
     private static final String API_KEY_WUNDERGROUND = "6ad6fa3bdb22276d"; // https://www.wunderground.com/weather/api/d/6ad6fa3bdb22276d/edit.html
-
+    private static final String WUNDERGROUND_STATION_URL = "https://api.wunderground.com/api/" + API_KEY_WUNDERGROUND + "/conditions/q/ch/zuerich-kreis-4-hard/zmw:00000.71.06660.json";
 
     public UploadService() {
         super("UploadService");
@@ -98,7 +98,7 @@ public class UploadService extends IntentService {
 
     private Sample fetchCurrentConditionsOutside() {
         try {
-            URL url = new URL("https://api.wunderground.com/api/" + API_KEY_WUNDERGROUND + "/conditions/q/CH/Zurich.json");
+            URL url = new URL(WUNDERGROUND_STATION_URL);
             HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
 
