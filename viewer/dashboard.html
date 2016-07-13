@@ -24,7 +24,7 @@
         });
 
         function draw(start, end) {
-            var query = "SELECT Date, DeviceNo8, DeviceNo9, Outside";
+            var query = "SELECT Date, DeviceNo8 as Bedroom, DeviceNo9 as 'Living room', Outside";
             var datatype = document.getElementById('datatype').value;
             switch (datatype) {
                 case 'Humidity':
