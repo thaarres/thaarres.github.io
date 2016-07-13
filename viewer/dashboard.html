@@ -20,7 +20,7 @@
 
     <script type="text/javascript">
         google.load('visualization', '1', {
-            packages: ['table', 'corechart']
+            packages: ['line', 'corechart']
         });
 
         function draw(start, end) {
@@ -40,46 +40,30 @@
 
             var queryText = encodeURIComponent(query);
             drawChart(query);
-            //drawVisualizationTable(query);
         }
-
-        function drawVisualizationTable(query) {
-            google.visualization.drawChart({
-                "containerId": "visualization_table_div",
-                "dataSourceUrl": "http://www.google.com/fusiontables/gvizdata?tq=",
-                "query":query,
-                "chartType": "Table",
-                "options": {}
-        });
-    }
         
         function drawChart(query) {
             var options = {
-              title: document.getElementById('datatype').value + ' data',
-              legend: { position: 'bottom' }
+                chart: {
+                  title: document.getElementById('datatype').value + ' data',
+                  subtitle: 'in °C'
+                },
+                legend: { position: 'bottom' },
+                width: document.getElementById('visualization_chart_div').style.width,
+                height: $(document).height()/2,
             };
-            
+
             google.visualization.drawChart({
                 "containerId": "visualization_chart_div",
                 "dataSourceUrl": "http://www.google.com/fusiontables/gvizdata?tq=",
                 "query":query,
-                "chartType": "LineChart",
-                "options": options
+                "chartType": "Line",
+                "options": google.charts.Line.convertOptions(options)
             });
             
         }
 
         //google.setOnLoadCallback(draw);
-
-        function toggleTable() {
-            var div = document.getElementById('visualization_table_div');
-            if (div.style.display !== 'none') {
-                div.style.display = 'none';
-            }
-            else {
-                div.style.display = 'block';
-            }
-        };
 
         $(function() {
 
@@ -151,12 +135,6 @@
             <div id="visualization_chart_div"></div>
         </div>
     </div>
-    <!--<div class="panel panel-success">-->
-        <!--<div class="panel-body">-->
-            <!--<p><a href="#" onclick="toggleTable()">Show/Hide table</a></p>-->
-            <!--<div id="visualization_table_div" style="display:none;"></div>-->
-        <!--</div>-->
-    <!--</div>-->
 </div>
 </body>
 </html>
