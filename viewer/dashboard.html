@@ -19,6 +19,10 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
 
     <script type="text/javascript">
+        $( document ).ready(function() {
+            queryMostRecent();
+        });
+
         google.load('visualization', '1', {
             packages: ['line', 'corechart']
         });
@@ -90,6 +94,29 @@
 
         });
 
+        function dataHandler(response) {
+            $('#current_date').html(response.rows[0][0]);
+            $('#bedroom_current').html(response.rows[0][1]+'ºC');
+            $('#livingroom_current').html(response.rows[0][2]+'ºC');
+            $('#outside_current').html(response.rows[0][3]+'ºC');
+            //do something with the data using response.rows
+        }
+
+        function queryMostRecent() {
+            // Builds a Fusion Tables SQL query and hands the result to dataHandler
+
+            var queryUrlHead = 'https://www.googleapis.com/fusiontables/v2/query?sql=';
+            var queryUrlTail = '&key=AIzaSyC6bt0RnAVIDwdj3eiSJBmrEPqTmQGDNkM';
+            Table = '1jQ_Jnnw26pWU05sGBNdXbXlvxB-66_W4fuJgsTG7';
+
+            // write your SQL as normal, then encode it
+            var query = "SELECT Date, DeviceNo8 as Bedroom, DeviceNo9 as 'Living room', Outside FROM " + Table + " ORDER BY Date DESC LIMIT 1";
+            var queryurl = encodeURI(queryUrlHead + query + queryUrlTail);
+
+            var jqxhr = $.get(queryurl, dataHandler, "jsonp");
+        }
+
+
     </script>
 
 </head>
@@ -97,7 +124,27 @@
 <div class="container-fluid" style="margin:10;padding:0">
     <div class="panel panel-success">
         <div class="panel-heading">
-            <h1 class="panel-title">Weatherstation</h1>
+            <h1 class="panel-title">Current conditions</h1>
+        </div>
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-md-2"><label>Bedroom</label></div>
+                <div class="col-md-2"><label>Living room</label></div>
+                <div class="col-md-2"><label>Outside</label></div>
+            </div>
+            <div class="row">
+                <div class="col-md-2" id="bedroom_current">--</div>
+                <div class="col-md-2" id="livingroom_current">--</div>
+                <div class="col-md-2" id="outside_current">--</div>
+            </div>
+            <div class="row">
+                <div class="col-md-6"><br/><i id="current_date">--</i></div>
+            </div>
+        </div>
+    </div>
+    <div class="panel panel-success">
+        <div class="panel-heading">
+            <h1 class="panel-title">Historical data</h1>
         </div>
         <div class="panel-body">
             <div class="row">
