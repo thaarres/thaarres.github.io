@@ -95,7 +95,7 @@
         });
 
         function dataHandler(response) {
-            $('#current_date').html(response.rows[0][0]);
+            $('#current_date').html(moment(response.rows[0][0], "YYYY-MM-DD HH:mm:ss").fromNow());
             $('#bedroom_current').html(response.rows[0][1]+'ºC');
             $('#livingroom_current').html(response.rows[0][2]+'ºC');
             $('#outside_current').html(response.rows[0][3]+'ºC');
