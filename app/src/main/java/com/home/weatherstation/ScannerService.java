@@ -35,7 +35,7 @@ public class ScannerService extends Service {
     private static final String DEVICE_NO8_MAC_ADDRESS = "D3:60:FB:B2:D1:39";
     private static final String DEVICE_NO9_MAC_ADDRESS = "FA:67:91:00:D7:B2";
 
-
+    private BluetoothAdapter mBluetoothAdapter;
     private BluetoothLeScanner mLEScanner;
     private ScanSettings settings;
     private final List<ScanFilter> scanFilters = new ArrayList<>();
@@ -97,11 +97,7 @@ public class ScannerService extends Service {
 
         mHandler = new Handler();
 
-        // Initializes Bluetooth adapter.
-        BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-        BluetoothAdapter mBluetoothAdapter = bluetoothManager.getAdapter();
-
-        enableBT();
+        mBluetoothAdapter = ((BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE)).getAdapter();
 
         mLEScanner = mBluetoothAdapter.getBluetoothLeScanner();
         settings = new ScanSettings.Builder()
@@ -125,25 +121,25 @@ public class ScannerService extends Service {
         }
 
         if (START_SCHEDULER.equals(action)) {
-            scheduleNextScanAndUpload();
+            scheduleNextScan();
         } else if (STOP_SCHEDULER.equals(action)) {
-            cancelNextScanAndUpload();
+            cancelNextScan();
         } else if (SCAN_AND_UPLOAD.equals(action)) {
-            scanAndUpload();
             if (scheduleNext) {
-                scheduleNextScanAndUpload();
+                scheduleNextScan();
             }
+            scanAndUpload();
         }
 
         return START_REDELIVER_INTENT;
     }
 
 
-    private void scheduleNextScanAndUpload() {
+    private void scheduleNextScan() {
         Log.i(TAG, "Scheduling next scan ...");
-        alarmIntent = PendingIntent.getService(this, 0, buildScanAndUploadAndScheduleNextIntent(this), 0);
+        alarmIntent = PendingIntent.getService(this, 0, buildScanAndUploadAndScheduleNextIntent(this), PendingIntent.FLAG_UPDATE_CURRENT);
         long triggerTime = calculateNextHalfHourInMillis();
-        alarmMgr.setAlarmClock(new AlarmManager.AlarmClockInfo(triggerTime, PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), 0)), alarmIntent);
+        alarmMgr.setAlarmClock(new AlarmManager.AlarmClockInfo(triggerTime, PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT)), alarmIntent);
         Log.i(TAG, "Next scan scheduled at " + new Date(triggerTime));
         Storage.storeNextScheduledScanTime(this, triggerTime);
     }
@@ -167,7 +163,7 @@ public class ScannerService extends Service {
         return cal.getTimeInMillis();
     }
 
-    private void cancelNextScanAndUpload() {
+    private void cancelNextScan() {
         if (alarmIntent != null) {
             Log.i(TAG, "Canceling scans ...");
             alarmMgr.cancel(alarmIntent);
@@ -263,10 +259,28 @@ public class ScannerService extends Service {
         } else {
             Log.w(TAG, "Did not receive results from both devices! DeviceNo8=" + deviceNr8 + ", DeviceNo9=" + deviceNr9);
         }
+
+        restartBT();
     }
 
-    private void enableBT() {
-        // TODO implement automatically enable BT
+    private void restartBT() {
+        Log.i(TAG, "Disabling BT in 1s ...");
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mBluetoothAdapter.disable();
+            }
+        }, 1000);
+
+        Log.i(TAG, "Re-enabling BT in 5s ...");
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+
+                mBluetoothAdapter.enable();
+
+            }
+        }, 5000);
     }
 
     private Sample parse(ScanRecord record, Date date) {
