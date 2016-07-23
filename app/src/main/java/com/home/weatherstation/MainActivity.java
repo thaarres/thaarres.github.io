@@ -11,6 +11,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 
@@ -69,6 +71,9 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         ((TextView) findViewById(R.id.version)).setText(version);
 
         enableButtons(false);
+
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        getSupportActionBar().setIcon(R.mipmap.ic_launcher);
 
         startActivityForResult(new Intent(this, AuthActivity.class), 2001);
     }
@@ -130,7 +135,16 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             @Override
             public void run() {
                 long nextTriggerTime = ScannerService.getNextScheduled(MainActivity.this);
-                schedulerStatus.setText(nextTriggerTime > -1 ? "Next scan at:\n" + new Date(nextTriggerTime).toString() : "OFF\nNo scan scheduled.");
+                DateFormat df = new SimpleDateFormat("dd.MM.yyyy HH:mm");
+                if (nextTriggerTime > -1) {
+                    schedulerStatus.setText("Next scan at:\n" + df.format(new Date(nextTriggerTime)));
+                    startSchedulerButton.setEnabled(false);
+                    stopSchedulerButton.setEnabled(true);
+                } else {
+                    schedulerStatus.setText("OFF\nNo scan scheduled.");
+                    startSchedulerButton.setEnabled(true);
+                    stopSchedulerButton.setEnabled(false);
+                }
             }
         }, 1000);
     }

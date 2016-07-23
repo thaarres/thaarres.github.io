@@ -138,13 +138,13 @@ public class ScannerService extends Service {
     private void scheduleNextScan() {
         Log.i(TAG, "Scheduling next scan ...");
         alarmIntent = PendingIntent.getService(this, 0, buildScanAndUploadAndScheduleNextIntent(this), PendingIntent.FLAG_UPDATE_CURRENT);
-        long triggerTime = calculateNextHalfHourInMillis();
+        long triggerTime = calculateNextTwenyMinsInMillis();
         alarmMgr.setAlarmClock(new AlarmManager.AlarmClockInfo(triggerTime, PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT)), alarmIntent);
         Log.i(TAG, "Next scan scheduled at " + new Date(triggerTime));
         Storage.storeNextScheduledScanTime(this, triggerTime);
     }
 
-    private static long calculateNextHalfHourInMillis() {
+    private static long calculateNextTwenyMinsInMillis() {
         Calendar cal = Calendar.getInstance();
         int currentHourOfDay = cal.get(Calendar.HOUR_OF_DAY);
         int currentMinuteOfHour = cal.get(Calendar.MINUTE);
@@ -152,9 +152,11 @@ public class ScannerService extends Service {
         cal.set(Calendar.MINUTE, 0); // reset to 00m:00s
         cal.set(Calendar.SECOND, 0);
 
-        if (currentMinuteOfHour >= 0 && currentMinuteOfHour < 30) {
-            cal.add(Calendar.MINUTE, 30);
-        } else if (currentMinuteOfHour >= 30 && currentMinuteOfHour <= 59) {
+        if (currentMinuteOfHour >= 0 && currentMinuteOfHour < 20) {
+            cal.add(Calendar.MINUTE, 20);
+        } else if (currentMinuteOfHour >= 20 && currentMinuteOfHour <= 39) {
+            cal.add(Calendar.MINUTE, 40);
+        } else if (currentMinuteOfHour >= 40 && currentMinuteOfHour <= 59) {
             cal.add(Calendar.HOUR, 1);
         } else {
             throw new IllegalArgumentException("currentHour=" + currentHourOfDay + ", currentMin=" + currentMinuteOfHour);
