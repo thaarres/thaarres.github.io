@@ -10,9 +10,14 @@ import org.json.JSONObject;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -35,6 +40,7 @@ public class UploadService extends IntentService {
 
     private static final String API_KEY_WUNDERGROUND = "6ad6fa3bdb22276d"; // https://www.wunderground.com/weather/api/d/6ad6fa3bdb22276d/edit.html
     private static final String WUNDERGROUND_STATION_URL = "https://api.wunderground.com/api/" + API_KEY_WUNDERGROUND + "/conditions/q/ch/zuerich-kreis-4-hard/zmw:00000.71.06660.json";
+    private static final String SMN_STATION_URL = "http://data.netcetera.com:80/smn/smn/REH"; // http://data.netcetera.com/smn/
 
     public UploadService() {
         super("UploadService");
@@ -69,7 +75,9 @@ public class UploadService extends IntentService {
                 final Date timestamp = new Date(intent.getLongExtra(EXTRA_TIMESTAMP, System.currentTimeMillis()));
                 final Sample sampleDevice8 = intent.getParcelableExtra(EXTRA_SAMPLE_DEVICE8);
                 final Sample sampleDevice9 = intent.getParcelableExtra(EXTRA_SAMPLE_DEVICE9);
-                final Sample sampleOutside = fetchCurrentConditionsOutside();
+//                final Sample sampleOutside = fetchCurrentConditionsOutsideWunderGround();
+                final Sample sampleOutside = fetchCurrentConditionsOutsideSMN();
+                Log.i(TAG, "" + sampleOutside);
                 upload(timestamp, sampleDevice8, sampleDevice9, sampleOutside);
             } else {
                 Log.w(TAG, "Unknown action: " + action);
@@ -96,7 +104,7 @@ public class UploadService extends IntentService {
         }
     }
 
-    private Sample fetchCurrentConditionsOutside() {
+    private Sample fetchCurrentConditionsOutsideWunderGround() {
         try {
             URL url = new URL(WUNDERGROUND_STATION_URL);
             HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
@@ -121,6 +129,43 @@ public class UploadService extends IntentService {
             return new Sample(new Date(), "Outside", 0, 0, 0, 0, 0);
         }
 
+    }
+
+    private static Sample fetchCurrentConditionsOutsideSMN() {
+        try {
+            URL url = new URL(SMN_STATION_URL);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+
+            // read the response
+            Log.i(TAG, "Response Code: " + conn.getResponseCode());
+            InputStream in = new BufferedInputStream(conn.getInputStream());
+            String response = org.apache.commons.io.IOUtils.toString(in, "UTF-8");
+            Log.v(TAG, response);
+
+            JSONObject currentObservation = new JSONObject(response);
+            Date d = parseDate(currentObservation.getString("dateTime"));
+            float tempCurrent = Float.valueOf(currentObservation.getString("temperature"));
+            int relHumid = Integer.valueOf(currentObservation.getString("humidity"));
+            int pressure = currentObservation.getInt("qfePressure");
+
+            return new Sample(d, "Outside", tempCurrent, 0, 0, relHumid, pressure);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new Sample(new Date(), "Outside", 0, 0, 0, 0, 0);
+        }
+
+    }
+
+    private static Date parseDate(String dateString) {
+        DateFormat utcFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        utcFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        try {
+            return utcFormat.parse(dateString);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return new Date();
+        }
     }
 
     /**
