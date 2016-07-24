@@ -25,7 +25,9 @@ window.onload = function() {
             circleSegment.draw('25%', '90%', 1.5, {
               circular: true,
               easing: d3_ease.easeElasticOut.ease,
-              callback: function() {}
+              callback: function() {
+                document.activeElement.blur(); // clear .refresh-icon:focus style
+              }
             });
           }
         });
