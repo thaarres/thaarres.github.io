@@ -26,8 +26,12 @@
     <link rel="stylesheet" type="text/css" href="./style/weatherstation.css" />
 
     <script type="text/javascript">
+        var start = moment().subtract(1, 'days');;
+        var end = moment();
+
         $( document ).ready(function() {
             queryMostRecent();
+            updateDateRangePicker();
         });
 
         google.load('visualization', '1', {
@@ -76,10 +80,7 @@
 
         //google.setOnLoadCallback(draw);
 
-        $(function() {
-
-            var start = moment().subtract(1, 'days');
-            var end = moment();
+        function updateDateRangePicker() {
 
             function cb(start, end) {
                 $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
@@ -97,9 +98,13 @@
                 }
             }, cb);
 
-            cb(start, end);
+            $('#reportrange').on('apply.daterangepicker', function(ev, picker) {
+              //do something, like clearing an input
+              start = $('#reportrange').data('daterangepicker').startDate._d;
+            });
 
-        });
+            cb(start, end);
+        };
 
         function dataHandler(response) {
             $('#current_date').html(moment(response.rows[0][0], "YYYY-MM-DD HH:mm:ss").fromNow());
@@ -137,7 +142,7 @@
                 </div>
                 <div class="col-xs-3 col-md-6 pull-right">
                     <div class="container">
-                        <button class="refresh-icon" onclick="queryMostRecent()">
+                        <button class="refresh-icon" onclick="queryMostRecent(); updateDateRangePicker();">
                             <svg viewBox="0 0 90 90">
                                 <path class="circle-path" d="M 45 45 m 0 -30 a 30 30 0 1 1 0 60 a 30 30 0 1 1 0 -60"></path>
                             </svg>
