@@ -26,7 +26,7 @@
     <link rel="stylesheet" type="text/css" href="./style/weatherstation.css" />
 
     <script type="text/javascript">
-        var start = moment().subtract(1, 'days');;
+        var start = moment().subtract(1, 'days');
         var end = moment();
 
         $( document ).ready(function() {
@@ -82,6 +82,10 @@
 
         function updateDateRangePicker() {
 
+            var diffInMillis = end.diff(start);
+            end = moment();
+            start = moment().subtract(diffInMillis, 'ms');
+
             function cb(start, end) {
                 $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
                 draw(start.format('YYYY-MM-DD HH:mm'), end.format('YYYY-MM-DD HH:mm'));
@@ -99,7 +103,6 @@
             }, cb);
 
             $('#reportrange').on('apply.daterangepicker', function(ev, picker) {
-              //do something, like clearing an input
               start = $('#reportrange').data('daterangepicker').startDate._d;
             });
 
