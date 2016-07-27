@@ -9,6 +9,9 @@ import java.util.Date;
  * Created by thaarres on 12/06/16.
  */
 public class Sample implements Parcelable {
+    public static final float NOT_SET_FLOAT = -999f;
+    public static final int NOT_SET_INT = -999;
+
     private Date timestamp;
     private String deviceName;
     private float tempCurrent;
@@ -55,6 +58,8 @@ public class Sample implements Parcelable {
     public float getTempCurrent() {
         return tempCurrent;
     }
+
+    public boolean hasTempCurrent() { return tempCurrent != NOT_SET_FLOAT; }
 
     public float getTempLow() {
         return tempLow;

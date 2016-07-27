@@ -90,7 +90,7 @@ public class UploadService extends IntentService {
         while (tries < 4) {
             tries++;
             try {
-                insert(timestamp, deviceNo8.getTempCurrent(), deviceNo9.getTempCurrent(), sampleOutside.getTempCurrent());
+                insert(timestamp, deviceNo8, deviceNo9, sampleOutside);
                 Storage.storeLastUploadTime(getBaseContext(), System.currentTimeMillis());
                 return;
             } catch (IOException e) {
@@ -126,7 +126,7 @@ public class UploadService extends IntentService {
             return new Sample(d, "Outside", tempCurrent, 0, 0, relHumid, pressure);
         } catch (Exception e) {
             e.printStackTrace();
-            return new Sample(new Date(), "Outside", 0, 0, 0, 0, 0);
+            return new Sample(new Date(), "Outside", Sample.NOT_SET_FLOAT, Sample.NOT_SET_FLOAT, Sample.NOT_SET_FLOAT, Sample.NOT_SET_INT, Sample.NOT_SET_INT);
         }
 
     }
@@ -152,7 +152,7 @@ public class UploadService extends IntentService {
             return new Sample(d, "Outside", tempCurrent, 0, 0, relHumid, pressure);
         } catch (Exception e) {
             e.printStackTrace();
-            return new Sample(new Date(), "Outside", 0, 0, 0, 0, 0);
+            return new Sample(new Date(), "Outside", Sample.NOT_SET_FLOAT, Sample.NOT_SET_FLOAT, Sample.NOT_SET_FLOAT, Sample.NOT_SET_INT, Sample.NOT_SET_INT);
         }
 
     }
@@ -171,11 +171,15 @@ public class UploadService extends IntentService {
     /**
      * Make sure there is a valid token available. See @link{com.home.weatherstation.Authenticator}
      */
-    private void insert(Date timestamp, float temperatureDevice8, float temperatureDevice9, float temperatureOutside) throws IOException {
+    private void insert(Date timestamp, Sample device8, Sample device9, Sample outside) throws IOException {
 
         // Encode the query
-        String query = URLEncoder.encode("INSERT INTO " + TEMPERATURE_TABLE_ID + " (Date,DeviceNo8,DeviceNo9,Outside) "
-                + "VALUES ('" + android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", timestamp) + "', " + temperatureDevice8 + ", " + temperatureDevice9 + ", " + temperatureOutside + ")");
+        String query = URLEncoder.encode("INSERT INTO " + TEMPERATURE_TABLE_ID +
+                " (Date,DeviceNo8,DeviceNo9"+ (outside.hasTempCurrent() ? ",Outside" : "") +") "
+                + "VALUES ('" + android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", timestamp) + "', "
+                + device8.getTempCurrent() + ", "
+                + device9.getTempCurrent()
+                + (outside.hasTempCurrent() ? ", " + outside.getTempCurrent() : "") + ")");
         URL url = new URL("https://www.googleapis.com/fusiontables/v2/query?sql=" + query + "&key=" + API_KEY_GOOGLE);
         HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
         conn.setRequestMethod("POST");
