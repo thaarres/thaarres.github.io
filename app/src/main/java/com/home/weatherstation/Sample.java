@@ -73,6 +73,10 @@ public class Sample implements Parcelable {
         return relativeHumidity;
     }
 
+    public boolean hasRelativeHumidity() {
+        return relativeHumidity != NOT_SET_INT;
+    }
+
     public int getPressure() {
         return pressure;
     }
@@ -118,4 +122,5 @@ public class Sample implements Parcelable {
         relativeHumidity = in.readInt();
         pressure = in.readInt();
     }
+
 }

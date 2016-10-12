@@ -11,6 +11,7 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.text.DateFormat;
@@ -36,6 +37,7 @@ public class UploadService extends IntentService {
     private static final String EXTRA_SAMPLE_DEVICE9 = "com.home.weatherstation.extra.sampledevice9";
 
     private static final String TEMPERATURE_TABLE_ID = "1jQ_Jnnw26pWU05sGBNdXbXlvxB-66_W4fuJgsTG7";
+    private static final String HUMIDITY_TABLE_ID = "1sJHjpA2ToIvRbY0eksYhS1hfctq8yg-1H1KPhvaJ";
     private static final String API_KEY_GOOGLE = "AIzaSyC6bt0RnAVIDwdj3eiSJBmrEPqTmQGDNkM";
 
     private static final String API_KEY_WUNDERGROUND = "6ad6fa3bdb22276d"; // https://www.wunderground.com/weather/api/d/6ad6fa3bdb22276d/edit.html
@@ -172,14 +174,29 @@ public class UploadService extends IntentService {
      * Make sure there is a valid token available. See @link{com.home.weatherstation.Authenticator}
      */
     private void insert(Date timestamp, Sample device8, Sample device9, Sample outside) throws IOException {
+        CharSequence timestampValue = android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", timestamp);
+        insert(TEMPERATURE_TABLE_ID, timestampValue, device8.getTempCurrent(), device9.getTempCurrent(), outside.hasTempCurrent(), outside.getTempCurrent());
+        insert(HUMIDITY_TABLE_ID, timestampValue, device8.getRelativeHumidity(), device9.getRelativeHumidity(), outside.hasRelativeHumidity(), outside.getRelativeHumidity());
+    }
+
+    private void insert(String table, CharSequence timestamp, float device8Value, float device9Value, boolean outsideHasValue, float outsideValue) throws IOException {
+        insert(table, timestamp.toString(), String.valueOf(device8Value), String.valueOf(device9Value), outsideHasValue, String.valueOf(outsideValue));
+    }
+
+    private void insert(String table, CharSequence timestamp, int device8Value, int device9Value, boolean outsideHasValue, int outsideValue) throws IOException {
+        insert(table, timestamp.toString(), String.valueOf(device8Value), String.valueOf(device9Value), outsideHasValue, String.valueOf(outsideValue));
+    }
+
+    private void insert(String table, CharSequence timestamp, String device8Value, String device9Value, boolean outsideHasValue, String outsideValue) throws IOException {
+        // build insert statements
+        String rawInsertStatement =
+                "INSERT INTO %s (Date,DeviceNo8,DeviceNo9" + (outsideHasValue ? ",Outside" : "") + ") " + "VALUES ('%s', %s, %s" + (outsideHasValue ? ", " + outsideValue : "") + ")";
+        String insertStatement = String.format(rawInsertStatement, table, timestamp, device8Value, device9Value);
+
+        Log.v(TAG, "Insert statement : " + insertStatement);
 
         // Encode the query
-        String query = URLEncoder.encode("INSERT INTO " + TEMPERATURE_TABLE_ID +
-                " (Date,DeviceNo8,DeviceNo9"+ (outside.hasTempCurrent() ? ",Outside" : "") +") "
-                + "VALUES ('" + android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", timestamp) + "', "
-                + device8.getTempCurrent() + ", "
-                + device9.getTempCurrent()
-                + (outside.hasTempCurrent() ? ", " + outside.getTempCurrent() : "") + ")");
+        String query = URLEncoder.encode(insertStatement);
         URL url = new URL("https://www.googleapis.com/fusiontables/v2/query?sql=" + query + "&key=" + API_KEY_GOOGLE);
         HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
         conn.setRequestMethod("POST");

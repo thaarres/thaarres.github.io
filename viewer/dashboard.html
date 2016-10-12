@@ -49,6 +49,8 @@
             var datatype = document.getElementById('datatype').value;
             switch (datatype) {
                 case 'Humidity':
+                    query += " FROM 1sJHjpA2ToIvRbY0eksYhS1hfctq8yg-1H1KPhvaJ";
+                    break;
                 case 'Pressure':
                 case 'Temperature':
                     query += " FROM 1jQ_Jnnw26pWU05sGBNdXbXlvxB-66_W4fuJgsTG7";
@@ -62,12 +64,24 @@
             var queryText = encodeURIComponent(query);
             drawChart(query);
         }
-        
+
+        function getUnitFor(datatype) {
+            switch (datatype) {
+                case 'Humidity':
+                    return '%';
+                    break;
+                case 'Pressure':
+                case 'Temperature':
+                    return '°C';
+                    break;
+            }
+        }
+
         function drawChart(query) {
             var options = {
                 chart: {
                   title: document.getElementById('datatype').value + ' data',
-                  subtitle: 'in °C'
+                  subtitle: 'in ' + getUnitFor(document.getElementById('datatype').value)
                 },
                 legend: { position: 'bottom' },
                 width: document.getElementById('visualization_chart_div').style.width,
@@ -115,26 +129,48 @@
             cb(start, end);
         };
 
-        function dataHandler(response) {
+        function responseHandlerTemperature(response) {
+            unit = getUnitFor('Temperature')
             $('#current_date').html(moment(response.rows[0][0], "YYYY-MM-DD HH:mm:ss").fromNow());
-            $('#bedroom_current').html(response.rows[0][1]+'ºC');
-            $('#livingroom_current').html(response.rows[0][2]+'ºC');
-            $('#outside_current').html(response.rows[0][3]+'ºC');
-            //do something with the data using response.rows
+            $('#bedroom_currentTemperature').html(response.rows[0][1] + unit);
+            $('#livingroom_currentTemperature').html(response.rows[0][2] + unit);
+            $('#outside_currentTemperature').html(response.rows[0][3] + unit);
+        }
+
+        function responseHandlerHumidity(response) {
+            unit = getUnitFor('Humidity')
+            // $('#current_date').html(moment(response.rows[0][0], "YYYY-MM-DD HH:mm:ss").fromNow());
+            $('#bedroom_currentHumidity').html(response.rows[0][1] + unit);
+            $('#livingroom_currentHumidity').html(response.rows[0][2] + unit);
+            $('#outside_currentHumidity').html(response.rows[0][3] + unit);
         }
 
         function queryMostRecent() {
-            // Builds a Fusion Tables SQL query and hands the result to dataHandler
+            queryMostRecentTemperature();
+            queryMostRecentHumidity();
+        }
+
+        function queryMostRecentTemperature() {
+            table = '1jQ_Jnnw26pWU05sGBNdXbXlvxB-66_W4fuJgsTG7';
+            queryMostRecentFor(table, responseHandlerTemperature);
+        }
+
+        function queryMostRecentHumidity() {
+            table = '1sJHjpA2ToIvRbY0eksYhS1hfctq8yg-1H1KPhvaJ';
+            queryMostRecentFor(table, responseHandlerHumidity);
+        }
+
+        function queryMostRecentFor(table, handler) {
+            // Builds a Fusion Tables SQL query and hands the result to handler
 
             var queryUrlHead = 'https://www.googleapis.com/fusiontables/v2/query?sql=';
             var queryUrlTail = '&key=AIzaSyC6bt0RnAVIDwdj3eiSJBmrEPqTmQGDNkM';
-            Table = '1jQ_Jnnw26pWU05sGBNdXbXlvxB-66_W4fuJgsTG7';
 
             // write your SQL as normal, then encode it
-            var query = "SELECT Date, DeviceNo8 as Bedroom, DeviceNo9 as 'Living room', Outside FROM " + Table + " ORDER BY Date DESC LIMIT 1";
+            var query = "SELECT Date, DeviceNo8 as Bedroom, DeviceNo9 as 'Living room', Outside FROM " + table + " ORDER BY Date DESC LIMIT 1";
             var queryurl = encodeURI(queryUrlHead + query + queryUrlTail);
 
-            var jqxhr = $.get(queryurl, dataHandler, "jsonp");
+            var jqxhr = $.get(queryurl, handler, "jsonp");
         }
 
 
@@ -170,9 +206,14 @@
                 <div class="col-xs-4"><label>Outside</label></div>
             </div>
             <div class="row">
-                <div class="col-xs-4" id="bedroom_current">--</div>
-                <div class="col-xs-4" id="livingroom_current">--</div>
-                <div class="col-xs-4" id="outside_current">--</div>
+                <div class="col-xs-4" id="bedroom_currentTemperature">--</div>
+                <div class="col-xs-4" id="livingroom_currentTemperature">--</div>
+                <div class="col-xs-4" id="outside_currentTemperature">--</div>
+            </div>
+            <div class="row">
+                <div class="col-xs-4" id="bedroom_currentHumidity">--</div>
+                <div class="col-xs-4" id="livingroom_currentHumidity">--</div>
+                <div class="col-xs-4" id="outside_currentHumidity">--</div>
             </div>
             <div class="row">
                 <div class="col-xs-6"><br/><i id="current_date">--</i></div>
@@ -195,7 +236,7 @@
             <div class="row">
                 <div class="col-xs-12">
                     <!--<select id="datatype" onchange="draw();">-->
-                    <select id="datatype" class="form-control" disabled>
+                    <select id="datatype" class="form-control" onchange="queryMostRecent(); updateDateRangePicker();">
                         <option value="Temperature" selected="selected">Temperature</option>
                         <option value="Humidity">Humidity</option>
                         <option value="Pressure">Pressure</option>
