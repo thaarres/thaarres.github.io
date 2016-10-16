@@ -35,6 +35,7 @@ public class UploadService extends IntentService {
     private static final String EXTRA_TIMESTAMP = "com.home.weatherstation.extra.timestamp";
     private static final String EXTRA_SAMPLE_DEVICE8 = "com.home.weatherstation.extra.sampledevice8";
     private static final String EXTRA_SAMPLE_DEVICE9 = "com.home.weatherstation.extra.sampledevice9";
+    private static final String EXTRA_SAMPLE_DEVICE10 = "com.home.weatherstation.extra.sampledevice10";
 
     private static final String TEMPERATURE_TABLE_ID = "1jQ_Jnnw26pWU05sGBNdXbXlvxB-66_W4fuJgsTG7";
     private static final String HUMIDITY_TABLE_ID = "1sJHjpA2ToIvRbY0eksYhS1hfctq8yg-1H1KPhvaJ";
@@ -54,9 +55,9 @@ public class UploadService extends IntentService {
      *
      * @see IntentService
      */
-    public static void startUpload(Context context, final Date timestamp, final Sample sampleDeviceNo8, final Sample sampleDeviceNo9) {
+    public static void startUpload(Context context, final Date timestamp, final Sample sampleDeviceNo8, final Sample sampleDeviceNo9, final Sample sampleDeviceNo10) {
         if (sampleDeviceNo8 == null || sampleDeviceNo9 == null) {
-            Log.w(TAG, "Not starting upload because not all parameters set. sampleDeviceNo8=" + sampleDeviceNo8 + ", sampleDeviceNo9=" + sampleDeviceNo9);
+            Log.w(TAG, "Not starting upload because not all parameters set. sampleDeviceNo8=" + sampleDeviceNo8 + ", sampleDeviceNo9=" + sampleDeviceNo9+ ", sampleDeviceNo10=" + sampleDeviceNo10);
             return;
         }
 
@@ -65,6 +66,7 @@ public class UploadService extends IntentService {
         intent.putExtra(EXTRA_TIMESTAMP, timestamp.getTime());
         intent.putExtra(EXTRA_SAMPLE_DEVICE8, sampleDeviceNo8);
         intent.putExtra(EXTRA_SAMPLE_DEVICE9, sampleDeviceNo9);
+        intent.putExtra(EXTRA_SAMPLE_DEVICE10, sampleDeviceNo10);
         context.startService(intent);
     }
 
@@ -77,22 +79,23 @@ public class UploadService extends IntentService {
                 final Date timestamp = new Date(intent.getLongExtra(EXTRA_TIMESTAMP, System.currentTimeMillis()));
                 final Sample sampleDevice8 = intent.getParcelableExtra(EXTRA_SAMPLE_DEVICE8);
                 final Sample sampleDevice9 = intent.getParcelableExtra(EXTRA_SAMPLE_DEVICE9);
+                final Sample sampleDevice10 = intent.getParcelableExtra(EXTRA_SAMPLE_DEVICE10);
 //                final Sample sampleOutside = fetchCurrentConditionsOutsideWunderGround();
                 final Sample sampleOutside = fetchCurrentConditionsOutsideSMN();
                 Log.i(TAG, "" + sampleOutside);
-                upload(timestamp, sampleDevice8, sampleDevice9, sampleOutside);
+                upload(timestamp, sampleDevice8, sampleDevice9, sampleDevice10, sampleOutside);
             } else {
                 Log.w(TAG, "Unknown action: " + action);
             }
         }
     }
 
-    private void upload(Date timestamp, Sample deviceNo8, Sample deviceNo9, Sample sampleOutside) {
+    private void upload(Date timestamp, Sample deviceNo8, Sample deviceNo9, Sample deviceNo10, Sample sampleOutside) {
         int tries = 0;
         while (tries < 4) {
             tries++;
             try {
-                insert(timestamp, deviceNo8, deviceNo9, sampleOutside);
+                insert(timestamp, deviceNo8, deviceNo9, deviceNo10, sampleOutside);
                 Storage.storeLastUploadTime(getBaseContext(), System.currentTimeMillis());
                 return;
             } catch (IOException e) {
@@ -173,25 +176,25 @@ public class UploadService extends IntentService {
     /**
      * Make sure there is a valid token available. See @link{com.home.weatherstation.Authenticator}
      */
-    private void insert(Date timestamp, Sample device8, Sample device9, Sample outside) throws IOException {
+    private void insert(Date timestamp, Sample device8, Sample device9, Sample device10, Sample outside) throws IOException {
         CharSequence timestampValue = android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", timestamp);
-        insert(TEMPERATURE_TABLE_ID, timestampValue, device8.getTempCurrent(), device9.getTempCurrent(), outside.hasTempCurrent(), outside.getTempCurrent());
-        insert(HUMIDITY_TABLE_ID, timestampValue, device8.getRelativeHumidity(), device9.getRelativeHumidity(), outside.hasRelativeHumidity(), outside.getRelativeHumidity());
+        insert(TEMPERATURE_TABLE_ID, timestampValue, device8.getTempCurrent(), device9.getTempCurrent(), device10.getTempCurrent(), outside.hasTempCurrent(), outside.getTempCurrent());
+        insert(HUMIDITY_TABLE_ID, timestampValue, device8.getRelativeHumidity(), device9.getRelativeHumidity(), device10.getRelativeHumidity(), outside.hasRelativeHumidity(), outside.getRelativeHumidity());
     }
 
-    private void insert(String table, CharSequence timestamp, float device8Value, float device9Value, boolean outsideHasValue, float outsideValue) throws IOException {
-        insert(table, timestamp.toString(), String.valueOf(device8Value), String.valueOf(device9Value), outsideHasValue, String.valueOf(outsideValue));
+    private void insert(String table, CharSequence timestamp, float device8Value, float device9Value, float device10Value, boolean outsideHasValue, float outsideValue) throws IOException {
+        insert(table, timestamp.toString(), String.valueOf(device8Value), String.valueOf(device9Value), String.valueOf(device10Value), outsideHasValue, String.valueOf(outsideValue));
     }
 
-    private void insert(String table, CharSequence timestamp, int device8Value, int device9Value, boolean outsideHasValue, int outsideValue) throws IOException {
-        insert(table, timestamp.toString(), String.valueOf(device8Value), String.valueOf(device9Value), outsideHasValue, String.valueOf(outsideValue));
+    private void insert(String table, CharSequence timestamp, int device8Value, int device9Value, int device10Value, boolean outsideHasValue, int outsideValue) throws IOException {
+        insert(table, timestamp.toString(), String.valueOf(device8Value), String.valueOf(device9Value), String.valueOf(device10Value),outsideHasValue, String.valueOf(outsideValue));
     }
 
-    private void insert(String table, CharSequence timestamp, String device8Value, String device9Value, boolean outsideHasValue, String outsideValue) throws IOException {
+    private void insert(String table, CharSequence timestamp, String device8Value, String device9Value, String device10Value, boolean outsideHasValue, String outsideValue) throws IOException {
         // build insert statements
         String rawInsertStatement =
-                "INSERT INTO %s (Date,DeviceNo8,DeviceNo9" + (outsideHasValue ? ",Outside" : "") + ") " + "VALUES ('%s', %s, %s" + (outsideHasValue ? ", " + outsideValue : "") + ")";
-        String insertStatement = String.format(rawInsertStatement, table, timestamp, device8Value, device9Value);
+                "INSERT INTO %s (Date,DeviceNo8,DeviceNo9,DeviceNo10" + (outsideHasValue ? ",Outside" : "") + ") " + "VALUES ('%s', %s, %s, %s" + (outsideHasValue ? ", " + outsideValue : "") + ")";
+        String insertStatement = String.format(rawInsertStatement, table, timestamp, device8Value, device9Value, device10Value);
 
         Log.v(TAG, "Insert statement : " + insertStatement);
 

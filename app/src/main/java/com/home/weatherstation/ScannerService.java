@@ -34,6 +34,7 @@ public class ScannerService extends Service {
 
     private static final String DEVICE_NO8_MAC_ADDRESS = "D3:60:FB:B2:D1:39";
     private static final String DEVICE_NO9_MAC_ADDRESS = "FA:67:91:00:D7:B2";
+    private static final String DEVICE_NO10_MAC_ADDRESS = "xxxx";
 
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothLeScanner mLEScanner;
@@ -48,6 +49,7 @@ public class ScannerService extends Service {
     // results from scanner, poor mans simple caching approach...
     private Sample deviceNr8 = null;
     private Sample deviceNr9 = null;
+    private Sample deviceNr10 = null;
 
     // Stops scanning after 20 seconds.
     private static final long SCAN_PERIOD = 20000;
@@ -202,10 +204,11 @@ public class ScannerService extends Service {
     private void resetCachedSampleData() {
         deviceNr8 = null; // reset samples!
         deviceNr9 = null; // reset samples!
+        deviceNr10 = null; // reset samples!
     }
 
     private boolean hasSampleData() {
-        return deviceNr8 != null && deviceNr9 != null;
+        return deviceNr8 != null && deviceNr9 != null && deviceNr10 != null;
     }
 
 
@@ -236,6 +239,8 @@ public class ScannerService extends Service {
                 deviceNr8 = parse(result.getScanRecord(), new Date());
             } else if (DEVICE_NO9_MAC_ADDRESS.equals(result.getDevice().getAddress())) {
                 deviceNr9 = parse(result.getScanRecord(), new Date());
+            } else if (DEVICE_NO10_MAC_ADDRESS.equals(result.getDevice().getAddress())) {
+                deviceNr10 = parse(result.getScanRecord(), new Date());
             }
             if (hasSampleData()) {
                 mHandler.removeCallbacks(stopScanAndProcessRunnable);
@@ -256,10 +261,10 @@ public class ScannerService extends Service {
         if (hasSampleData()) {
             Storage.storeLastSuccessfulScanTime(getBaseContext(), now);
             Date timestamp = deviceNr8.getTimestamp();
-            Log.i(TAG, "Processing samples timestamp=" + timestamp + "\n" + deviceNr8 + "\n" + deviceNr9);
-            UploadService.startUpload(this, timestamp, deviceNr8, deviceNr9);
+            Log.i(TAG, "Processing samples timestamp=" + timestamp + "\n" + deviceNr8 + "\n" + deviceNr9 + "\n" + deviceNr10);
+            UploadService.startUpload(this, timestamp, deviceNr8, deviceNr9, deviceNr10);
         } else {
-            Log.w(TAG, "Did not receive results from both devices! DeviceNo8=" + deviceNr8 + ", DeviceNo9=" + deviceNr9);
+            Log.w(TAG, "Did not receive results from all devices! DeviceNo8=" + deviceNr8 + ", DeviceNo9=" + deviceNr9+ ", DeviceNo10=" + deviceNr10);
         }
 
         restartBT();
