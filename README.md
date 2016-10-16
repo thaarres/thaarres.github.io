@@ -2,7 +2,7 @@
 
 
 To render, go to:<br>
-    https://thaarres.github.io/viewer/dashboard.html<br>
+    http://thaarres.github.io/viewer/dashboard.html<br>
 
 Temperature data stored at:<br>
     https://fusiontables.google.com/DataSource?docid=1jQ_Jnnw26pWU05sGBNdXbXlvxB-66_W4fuJgsTG7 <br>
