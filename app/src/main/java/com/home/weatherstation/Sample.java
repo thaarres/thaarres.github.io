@@ -14,20 +14,14 @@ public class Sample implements Parcelable {
 
     private Date timestamp;
     private String deviceName;
-    private float tempCurrent;
-    private float tempLow;
-    private float tempHigh;
+    private float temperature;;
     private int relativeHumidity;
-    private int pressure;
 
-    public Sample(final Date timestamp, String deviceName, final float tempCurrent, final float tempLow, final float tempHigh, final int relativeHumidity, final int pressure) {
+    public Sample(final Date timestamp, String deviceName, final float temperature, final int relativeHumidity) {
         this.timestamp = timestamp;
         this.deviceName = deviceName;
-        this.tempCurrent = tempCurrent;
-        this.tempLow = tempLow;
-        this.tempHigh = tempHigh;
+        this.temperature = temperature;
         this.relativeHumidity = relativeHumidity;
-        this.pressure = pressure;
     }
 
     public Sample(Parcel in) {
@@ -55,19 +49,11 @@ public class Sample implements Parcelable {
         return deviceName;
     }
 
-    public float getTempCurrent() {
-        return tempCurrent;
+    public float getTemperature() {
+        return temperature;
     }
 
-    public boolean hasTempCurrent() { return tempCurrent != NOT_SET_FLOAT; }
-
-    public float getTempLow() {
-        return tempLow;
-    }
-
-    public float getTempHigh() {
-        return tempHigh;
-    }
+    public boolean hasTempCurrent() { return temperature != NOT_SET_FLOAT; }
 
     public int getRelativeHumidity() {
         return relativeHumidity;
@@ -77,20 +63,13 @@ public class Sample implements Parcelable {
         return relativeHumidity != NOT_SET_INT;
     }
 
-    public int getPressure() {
-        return pressure;
-    }
-
     @Override
     public String toString() {
         return "Sample{" +
                 "timestamp=" + timestamp +
                 ", deviceName='" + deviceName + '\'' +
-                ", tempCurrent=" + tempCurrent +
-                ", tempLow=" + tempLow +
-                ", tempHigh=" + tempHigh +
+                ", temperature=" + temperature +
                 ", relativeHumidity=" + relativeHumidity +
-                ", pressure=" + pressure +
                 '}';
     }
 
@@ -103,11 +82,8 @@ public class Sample implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeLong(timestamp.getTime());
         dest.writeString(deviceName);
-        dest.writeFloat(tempCurrent);
-        dest.writeFloat(tempLow);
-        dest.writeFloat(tempHigh);
+        dest.writeFloat(temperature);
         dest.writeInt(relativeHumidity);
-        dest.writeInt(pressure);
     }
 
     private void readFromParcel(Parcel in) {
@@ -116,11 +92,8 @@ public class Sample implements Parcelable {
         // written to the parcel
         timestamp = new Date(in.readLong());
         deviceName = in.readString();
-        tempCurrent = in.readFloat();
-        tempLow = in.readFloat();
-        tempHigh = in.readFloat();
+        temperature = in.readFloat();
         relativeHumidity = in.readInt();
-        pressure = in.readInt();
     }
 
 }

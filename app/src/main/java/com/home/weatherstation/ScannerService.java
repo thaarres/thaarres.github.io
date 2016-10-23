@@ -15,6 +15,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -34,7 +35,7 @@ public class ScannerService extends Service {
 
     private static final String DEVICE_NO8_MAC_ADDRESS = "D3:60:FB:B2:D1:39";
     private static final String DEVICE_NO9_MAC_ADDRESS = "FA:67:91:00:D7:B2";
-    private static final String DEVICE_NO10_MAC_ADDRESS = "xxxx";
+    private static final String DEVICE_NO10_MAC_ADDRESS = "xxxx"; //FIXME
 
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothLeScanner mLEScanner;
@@ -235,12 +236,14 @@ public class ScannerService extends Service {
         }
 
         private void cacheSample(ScanResult result) {
-            if (DEVICE_NO8_MAC_ADDRESS.equals(result.getDevice().getAddress())) {
-                deviceNr8 = parse(result.getScanRecord(), new Date());
-            } else if (DEVICE_NO9_MAC_ADDRESS.equals(result.getDevice().getAddress())) {
-                deviceNr9 = parse(result.getScanRecord(), new Date());
-            } else if (DEVICE_NO10_MAC_ADDRESS.equals(result.getDevice().getAddress())) {
-                deviceNr10 = parse(result.getScanRecord(), new Date());
+            Date now = new Date();
+            String deviceAddress = result.getDevice().getAddress();
+            if (DEVICE_NO8_MAC_ADDRESS.equals(deviceAddress)) {
+                deviceNr8 = parse(result.getScanRecord(), now);
+            } else if (DEVICE_NO9_MAC_ADDRESS.equals(deviceAddress)) {
+                deviceNr9 = parse(result.getScanRecord(), now);
+            } else if (DEVICE_NO10_MAC_ADDRESS.equals(deviceAddress)) {
+                deviceNr10 = parseNewDevice(result.getScanRecord(), now);
             }
             if (hasSampleData()) {
                 mHandler.removeCallbacks(stopScanAndProcessRunnable);
@@ -290,6 +293,8 @@ public class ScannerService extends Service {
         }, 5000);
     }
 
+    // Old (bigger) devices
+    @NonNull
     private Sample parse(ScanRecord record, Date date) {
 
         byte[] manufacturerSpecData = record.getManufacturerSpecificData().valueAt(0);
@@ -302,18 +307,38 @@ public class ScannerService extends Service {
         ByteBuffer bytes = ByteBuffer.wrap(manufacturerSpecData).order(ByteOrder.LITTLE_ENDIAN);
 
         bytes.get();                          // ? flag
-        short tempLowest = bytes.getShort();  // temp*10 (lowest)
+        bytes.getShort();                     // temp*10 (lowest)
         short tempCurrent = bytes.getShort(); // temp*10 (current)
-        short tempHighest = bytes.getShort(); // temp*10 (highest)
+        bytes.getShort();                     // temp*10 (highest)
         byte humidity = bytes.get();          // humidity in %
-        short pressure = bytes.getShort();    // pressure
-        //bed.getLong());                     // unknown 8 byte
 
-        return new Sample(date, record.getDeviceName(), (float) tempCurrent / 10, (float) tempLowest / 10, (float) tempHighest / 10, (int) humidity, (int) pressure);
+        return new Sample(date, record.getDeviceName(), (float) tempCurrent / 10, (int) humidity);
     }
 
+    // New (smaller and colored) devices. See app/external/Temperature-Humidity-Data-Logger-Commands-API.pdf for the protocol
+    @NonNull
+    private Sample parseNewDevice(ScanRecord record, Date date) {
 
-    public static long getNextScheduled(Context context) {
+        byte[] manufacturerSpecData = record.getManufacturerSpecificData().valueAt(0);
+
+        if (manufacturerSpecData == null) {
+            Log.w(TAG, "ManufacturerSpecificData is null");
+            return null;
+        }
+
+        ByteBuffer bytes = ByteBuffer.wrap(manufacturerSpecData).order(ByteOrder.LITTLE_ENDIAN);
+
+        bytes.get();                          // Blue Maestro’s SIG identifier
+        bytes.get();                          // Battery lvl in milli-volts
+        bytes.getShort();                     // Time interval for logging
+        bytes.getShort();                     // Current position of Time Interval counter
+        short tempCurrent = bytes.getShort(); // Current Temp temp*10
+        short humidity = bytes.getShort();    // Current humidity in %
+
+        return new Sample(date, record.getDeviceName(), (float) tempCurrent / 10, (int) humidity);
+    }
+
+    public static long getNextScheduled(final Context context) {
         AlarmManager.AlarmClockInfo nextAlarmClock = ((AlarmManager) context.getSystemService(Context.ALARM_SERVICE)).getNextAlarmClock();
         return nextAlarmClock != null ? nextAlarmClock.getTriggerTime() : -1;
     }

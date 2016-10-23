@@ -11,7 +11,6 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.text.DateFormat;
@@ -128,10 +127,10 @@ public class UploadService extends IntentService {
             int relHumid = Integer.valueOf(currentObservation.getString("relative_humidity").replaceAll("%", ""));
             int pressure = currentObservation.getInt("pressure_in");
 
-            return new Sample(d, "Outside", tempCurrent, 0, 0, relHumid, pressure);
+            return new Sample(d, "Outside", tempCurrent, relHumid);
         } catch (Exception e) {
             e.printStackTrace();
-            return new Sample(new Date(), "Outside", Sample.NOT_SET_FLOAT, Sample.NOT_SET_FLOAT, Sample.NOT_SET_FLOAT, Sample.NOT_SET_INT, Sample.NOT_SET_INT);
+            return new Sample(new Date(), "Outside", Sample.NOT_SET_FLOAT, Sample.NOT_SET_INT);
         }
 
     }
@@ -154,10 +153,10 @@ public class UploadService extends IntentService {
             int relHumid = Integer.valueOf(currentObservation.getString("humidity"));
             int pressure = currentObservation.getInt("qfePressure");
 
-            return new Sample(d, "Outside", tempCurrent, 0, 0, relHumid, pressure);
+            return new Sample(d, "Outside", tempCurrent, relHumid);
         } catch (Exception e) {
             e.printStackTrace();
-            return new Sample(new Date(), "Outside", Sample.NOT_SET_FLOAT, Sample.NOT_SET_FLOAT, Sample.NOT_SET_FLOAT, Sample.NOT_SET_INT, Sample.NOT_SET_INT);
+            return new Sample(new Date(), "Outside", Sample.NOT_SET_FLOAT, Sample.NOT_SET_INT);
         }
 
     }
@@ -178,7 +177,7 @@ public class UploadService extends IntentService {
      */
     private void insert(Date timestamp, Sample device8, Sample device9, Sample device10, Sample outside) throws IOException {
         CharSequence timestampValue = android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", timestamp);
-        insert(TEMPERATURE_TABLE_ID, timestampValue, device8.getTempCurrent(), device9.getTempCurrent(), device10.getTempCurrent(), outside.hasTempCurrent(), outside.getTempCurrent());
+        insert(TEMPERATURE_TABLE_ID, timestampValue, device8.getTemperature(), device9.getTemperature(), device10.getTemperature(), outside.hasTempCurrent(), outside.getTemperature());
         insert(HUMIDITY_TABLE_ID, timestampValue, device8.getRelativeHumidity(), device9.getRelativeHumidity(), device10.getRelativeHumidity(), outside.hasRelativeHumidity(), outside.getRelativeHumidity());
     }
 
