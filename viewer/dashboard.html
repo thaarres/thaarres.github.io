@@ -45,7 +45,7 @@
         });
 
         function draw(start, end) {
-            var query = "SELECT Date, DeviceNo8 as Bedroom, DeviceNo9 as 'Living room', DeviceNo10 as 'Eira\'s room', Outside";
+            var query = "SELECT Date, DeviceNo8 as 'Bedroom', DeviceNo9 as 'Living room', DeviceNo10 as 'Eira’s room', Outside";
             var datatype = document.getElementById('datatype').value;
             switch (datatype) {
                 case 'Humidity':
@@ -169,7 +169,7 @@
             var queryUrlTail = '&key=AIzaSyC6bt0RnAVIDwdj3eiSJBmrEPqTmQGDNkM';
 
             // write your SQL as normal, then encode it
-            var query = "SELECT Date, DeviceNo8 as Bedroom, DeviceNo9 as 'Living room', DeviceNo10 as 'Eira\'s room', Outside FROM " + table + " ORDER BY Date DESC LIMIT 1";
+            var query = "SELECT Date, DeviceNo8 as 'Bedroom', DeviceNo9 as 'Living room', DeviceNo10 as 'Eira’s room', Outside FROM " + table + " ORDER BY Date DESC LIMIT 1";
             var queryurl = encodeURI(queryUrlHead + query + queryUrlTail);
 
             var jqxhr = $.get(queryurl, handler, "jsonp");
@@ -205,7 +205,7 @@
             <div class="row">
                 <div class="col-xs-3"><label>Bedroom</label></div>
                 <div class="col-xs-3"><label>Living room</label></div>
-                <div class="col-xs-3"><label>Eira's room</label></div>
+                <div class="col-xs-3"><label>Eira’s room</label></div>
                 <div class="col-xs-3"><label>Outside</label></div>
             </div>
             <div class="row">
