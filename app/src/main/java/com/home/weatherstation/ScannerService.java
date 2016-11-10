@@ -15,7 +15,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -26,6 +25,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import bluemaestro.utility.sdk.ble.ScanRecordParser;
+import bluemaestro.utility.sdk.devices.BMTempHumi;
+
 public class ScannerService extends Service {
     private static final String START_SCHEDULER = "com.home.weatherstation.action.start_scheduled_scans";
     private static final String STOP_SCHEDULER = "com.home.weatherstation.action.stop_scheduled_scans";
@@ -35,7 +37,7 @@ public class ScannerService extends Service {
 
     private static final String DEVICE_NO8_MAC_ADDRESS = "D3:60:FB:B2:D1:39";
     private static final String DEVICE_NO9_MAC_ADDRESS = "FA:67:91:00:D7:B2";
-    private static final String DEVICE_NO10_MAC_ADDRESS = "xxxx"; //FIXME
+    private static final String DEVICE_NO10_MAC_ADDRESS = "DC:6C:14:1C:96:97";
 
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothLeScanner mLEScanner;
@@ -294,7 +296,7 @@ public class ScannerService extends Service {
     }
 
     // Old (bigger) devices
-    @NonNull
+    @Nullable
     private Sample parse(ScanRecord record, Date date) {
 
         byte[] manufacturerSpecData = record.getManufacturerSpecificData().valueAt(0);
@@ -316,26 +318,11 @@ public class ScannerService extends Service {
     }
 
     // New (smaller and colored) devices. See app/external/Temperature-Humidity-Data-Logger-Commands-API.pdf for the protocol
-    @NonNull
+    @Nullable
     private Sample parseNewDevice(ScanRecord record, Date date) {
-
-        byte[] manufacturerSpecData = record.getManufacturerSpecificData().valueAt(0);
-
-        if (manufacturerSpecData == null) {
-            Log.w(TAG, "ManufacturerSpecificData is null");
-            return null;
-        }
-
-        ByteBuffer bytes = ByteBuffer.wrap(manufacturerSpecData).order(ByteOrder.LITTLE_ENDIAN);
-
-        bytes.get();                          // Blue Maestro’s SIG identifier
-        bytes.get();                          // Battery lvl in milli-volts
-        bytes.getShort();                     // Time interval for logging
-        bytes.getShort();                     // Current position of Time Interval counter
-        short tempCurrent = bytes.getShort(); // Current Temp temp*10
-        short humidity = bytes.getShort();    // Current humidity in %
-
-        return new Sample(date, record.getDeviceName(), (float) tempCurrent / 10, (int) humidity);
+        ScanRecordParser parser = new ScanRecordParser(record.getBytes());
+        BMTempHumi bmTempHumi = new BMTempHumi(parser.getManufacturerData(), parser.getScanResponseData());
+        return new Sample(date, record.getDeviceName(), (float) bmTempHumi.getCurrentTemperature(), (int) bmTempHumi.getCurrentHumidity());
     }
 
     public static long getNextScheduled(final Context context) {

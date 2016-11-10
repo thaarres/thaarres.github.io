@@ -14,7 +14,7 @@ public class Sample implements Parcelable {
 
     private Date timestamp;
     private String deviceName;
-    private float temperature;;
+    private float temperature;
     private int relativeHumidity;
 
     public Sample(final Date timestamp, String deviceName, final float temperature, final int relativeHumidity) {
