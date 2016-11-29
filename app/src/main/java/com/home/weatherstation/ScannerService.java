@@ -35,9 +35,15 @@ public class ScannerService extends Service {
 
     private static final String TAG = ScannerService.class.getSimpleName();
 
-    private static final String DEVICE_NO8_MAC_ADDRESS = "D3:60:FB:B2:D1:39";
-    private static final String DEVICE_NO9_MAC_ADDRESS = "FA:67:91:00:D7:B2";
+    private static final String DEVICE_NO08_MAC_ADDRESS = "D3:60:FB:B2:D1:39";
+    private static final String DEVICE_NO09_MAC_ADDRESS = "FA:67:91:00:D7:B2";
     private static final String DEVICE_NO10_MAC_ADDRESS = "DC:6C:14:1C:96:97";
+
+    // Temperature calibration: DEVICE_NO10 is the master. DEVICE_NO9 and DEVICE_NO8 are shifted to match DEVICE_NO10
+    private static final float DEVICE_NO8_TEMP_SHIFT_DEGREES = -0.7f;
+    private static final float DEVICE_NO9_TEMP_SHIFT_DEGREES = 0f;
+    private static final float DEVICE_N10_TEMP_SHIFT_DEGREES = 0f;
+
 
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothLeScanner mLEScanner;
@@ -240,12 +246,12 @@ public class ScannerService extends Service {
         private void cacheSample(ScanResult result) {
             Date now = new Date();
             String deviceAddress = result.getDevice().getAddress();
-            if (DEVICE_NO8_MAC_ADDRESS.equals(deviceAddress)) {
-                deviceNr8 = parse(result.getScanRecord(), now);
-            } else if (DEVICE_NO9_MAC_ADDRESS.equals(deviceAddress)) {
-                deviceNr9 = parse(result.getScanRecord(), now);
+            if (DEVICE_NO08_MAC_ADDRESS.equals(deviceAddress)) {
+                deviceNr8 = parse(result.getScanRecord(), now, DEVICE_NO8_TEMP_SHIFT_DEGREES);
+            } else if (DEVICE_NO09_MAC_ADDRESS.equals(deviceAddress)) {
+                deviceNr9 = parse(result.getScanRecord(), now, DEVICE_NO9_TEMP_SHIFT_DEGREES);
             } else if (DEVICE_NO10_MAC_ADDRESS.equals(deviceAddress)) {
-                deviceNr10 = parseNewDevice(result.getScanRecord(), now);
+                deviceNr10 = parseNewDevice(result.getScanRecord(), now, DEVICE_N10_TEMP_SHIFT_DEGREES);
             }
             if (hasSampleData()) {
                 mHandler.removeCallbacks(stopScanAndProcessRunnable);
@@ -297,7 +303,7 @@ public class ScannerService extends Service {
 
     // Old (bigger) devices
     @Nullable
-    private Sample parse(ScanRecord record, Date date) {
+    private Sample parse(ScanRecord record, Date date, float tempCalibrationShift) {
 
         byte[] manufacturerSpecData = record.getManufacturerSpecificData().valueAt(0);
 
@@ -314,15 +320,15 @@ public class ScannerService extends Service {
         bytes.getShort();                     // temp*10 (highest)
         byte humidity = bytes.get();          // humidity in %
 
-        return new Sample(date, record.getDeviceName(), (float) tempCurrent / 10, (int) humidity);
+        return new Sample(date, record.getDeviceName(), ((float) tempCurrent / 10) + tempCalibrationShift, (int) humidity);
     }
 
     // New (smaller and colored) devices. See app/external/Temperature-Humidity-Data-Logger-Commands-API.pdf for the protocol
     @Nullable
-    private Sample parseNewDevice(ScanRecord record, Date date) {
+    private Sample parseNewDevice(ScanRecord record, Date date, float tempCalibrationShift) {
         ScanRecordParser parser = new ScanRecordParser(record.getBytes());
         BMTempHumi bmTempHumi = new BMTempHumi(parser.getManufacturerData(), parser.getScanResponseData());
-        return new Sample(date, record.getDeviceName(), (float) bmTempHumi.getCurrentTemperature(), (int) bmTempHumi.getCurrentHumidity());
+        return new Sample(date, record.getDeviceName(), ((float) bmTempHumi.getCurrentTemperature()) + tempCalibrationShift, (int) bmTempHumi.getCurrentHumidity());
     }
 
     public static long getNextScheduled(final Context context) {

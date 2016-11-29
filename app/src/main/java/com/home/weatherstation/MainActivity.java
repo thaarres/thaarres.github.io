@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         stopSchedulerButton = (Button) findViewById(R.id.stop_button);
         stopSchedulerButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
+            public void onClick(View v) {
                 stop();
             }
         });
@@ -116,11 +116,13 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     }
 
     private void start() {
+        startSchedulerButton.setEnabled(false);
         startService(ScannerService.buildStartSchedulerIntent(this));
         updateStatusScheduler();
     }
 
     private void stop() {
+        stopSchedulerButton.setEnabled(false);
         startService(ScannerService.buildStopSchedulerIntent(this));
         updateStatusScheduler();
     }
@@ -146,7 +148,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                     stopSchedulerButton.setEnabled(false);
                 }
             }
-        }, 1000);
+        }, 1500);
     }
 
     private void updateStatusResults() {
