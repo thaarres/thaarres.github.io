@@ -275,7 +275,7 @@ public class ScannerService extends Service {
             Log.i(TAG, "Processing samples timestamp=" + timestamp + "\n" + deviceNr8 + "\n" + deviceNr9 + "\n" + deviceNr10);
             UploadService.startUpload(this, timestamp, deviceNr8, deviceNr9, deviceNr10);
         } else {
-            Log.w(TAG, "Did not receive results from all devices! DeviceNo8=" + deviceNr8 + ", DeviceNo9=" + deviceNr9+ ", DeviceNo10=" + deviceNr10);
+            Log.w(TAG, "Did not receive results from all devices! DeviceNo8=" + deviceNr8 + ", DeviceNo9=" + deviceNr9 + ", DeviceNo10=" + deviceNr10);
         }
 
         restartBT();
@@ -320,7 +320,7 @@ public class ScannerService extends Service {
         bytes.getShort();                     // temp*10 (highest)
         byte humidity = bytes.get();          // humidity in %
 
-        return new Sample(date, record.getDeviceName(), ((float) tempCurrent / 10) + tempCalibrationShift, (int) humidity);
+        return new Sample(date, record.getDeviceName(), (float) (tempCurrent / 10) + tempCalibrationShift, (int) humidity);
     }
 
     // New (smaller and colored) devices. See app/external/Temperature-Humidity-Data-Logger-Commands-API.pdf for the protocol
@@ -328,11 +328,12 @@ public class ScannerService extends Service {
     private Sample parseNewDevice(ScanRecord record, Date date, float tempCalibrationShift) {
         ScanRecordParser parser = new ScanRecordParser(record.getBytes());
         BMTempHumi bmTempHumi = new BMTempHumi(parser.getManufacturerData(), parser.getScanResponseData());
-        return new Sample(date, record.getDeviceName(), ((float) bmTempHumi.getCurrentTemperature()) + tempCalibrationShift, (int) bmTempHumi.getCurrentHumidity());
+        return new Sample(date, record.getDeviceName(), (float) bmTempHumi.getCurrentTemperature() + tempCalibrationShift, (int) bmTempHumi.getCurrentHumidity());
     }
 
     public static long getNextScheduled(final Context context) {
         AlarmManager.AlarmClockInfo nextAlarmClock = ((AlarmManager) context.getSystemService(Context.ALARM_SERVICE)).getNextAlarmClock();
         return nextAlarmClock != null ? nextAlarmClock.getTriggerTime() : -1;
     }
+
 }
