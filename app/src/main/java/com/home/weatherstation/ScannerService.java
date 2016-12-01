@@ -40,10 +40,9 @@ public class ScannerService extends Service {
     private static final String DEVICE_NO10_MAC_ADDRESS = "DC:6C:14:1C:96:97";
 
     // Temperature calibration: DEVICE_NO10 is the master. DEVICE_NO9 and DEVICE_NO8 are shifted to match DEVICE_NO10
-    private static final float DEVICE_NO8_TEMP_SHIFT_DEGREES = -0.7f;
-    private static final float DEVICE_NO9_TEMP_SHIFT_DEGREES = 0f;
+    private static final float DEVICE_NO8_TEMP_SHIFT_DEGREES = -0.2f;
+    private static final float DEVICE_NO9_TEMP_SHIFT_DEGREES = +0.4f;
     private static final float DEVICE_N10_TEMP_SHIFT_DEGREES = 0f;
-
 
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothLeScanner mLEScanner;
@@ -320,7 +319,7 @@ public class ScannerService extends Service {
         bytes.getShort();                     // temp*10 (highest)
         byte humidity = bytes.get();          // humidity in %
 
-        return new Sample(date, record.getDeviceName(), (float) (tempCurrent / 10) + tempCalibrationShift, (int) humidity);
+        return new Sample(date, record.getDeviceName(), ((float) tempCurrent) / 10 + tempCalibrationShift, (int) humidity);
     }
 
     // New (smaller and colored) devices. See app/external/Temperature-Humidity-Data-Logger-Commands-API.pdf for the protocol

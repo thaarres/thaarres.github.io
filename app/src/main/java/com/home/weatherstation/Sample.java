@@ -49,6 +49,7 @@ public class Sample implements Parcelable {
         return deviceName;
     }
 
+    // could contain something like 23.800001, make sure to limit precision if needed
     public float getTemperature() {
         return temperature;
     }
