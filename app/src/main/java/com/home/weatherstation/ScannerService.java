@@ -251,6 +251,8 @@ public class ScannerService extends Service {
                 deviceNr9 = parse(result.getScanRecord(), now, DEVICE_NO9_TEMP_SHIFT_DEGREES);
             } else if (DEVICE_NO10_MAC_ADDRESS.equals(deviceAddress)) {
                 deviceNr10 = parseNewDevice(result.getScanRecord(), now, DEVICE_N10_TEMP_SHIFT_DEGREES);
+                // REMOVE THIS EVIL HACK AS SOON AS THERE IS A NEW DEVICE TO BE SCANNED
+                deviceNr8 = parseNewDevice(result.getScanRecord(), now, DEVICE_N10_TEMP_SHIFT_DEGREES);
             }
             if (hasSampleData()) {
                 mHandler.removeCallbacks(stopScanAndProcessRunnable);
