@@ -35,14 +35,14 @@ public class ScannerService extends Service {
 
     private static final String TAG = ScannerService.class.getSimpleName();
 
-    private static final String DEVICE_NO08_MAC_ADDRESS = "D3:60:FB:B2:D1:39";
+    private static final String DEVICE_NO08_MAC_ADDRESS = "F0:E7:FA:CE:1F:D8";
     private static final String DEVICE_NO09_MAC_ADDRESS = "FA:67:91:00:D7:B2";
     private static final String DEVICE_NO10_MAC_ADDRESS = "DC:6C:14:1C:96:97";
 
-    // Temperature calibration: DEVICE_NO10 is the master. DEVICE_NO9 and DEVICE_NO8 are shifted to match DEVICE_NO10
-    private static final float DEVICE_NO8_TEMP_SHIFT_DEGREES = -0.2f;
-    private static final float DEVICE_NO9_TEMP_SHIFT_DEGREES = +0.4f;
-    private static final float DEVICE_N10_TEMP_SHIFT_DEGREES = 0f;
+    // Temperature calibration
+    private static final float DEVICE_NO8_TEMP_SHIFT_DEGREES = -0.1f;
+    private static final float DEVICE_NO9_TEMP_SHIFT_DEGREES = 0.2f;
+    private static final float DEVICE_N10_TEMP_SHIFT_DEGREES = 0.1f;
 
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothLeScanner mLEScanner;
@@ -246,13 +246,11 @@ public class ScannerService extends Service {
             Date now = new Date();
             String deviceAddress = result.getDevice().getAddress();
             if (DEVICE_NO08_MAC_ADDRESS.equals(deviceAddress)) {
-                deviceNr8 = parse(result.getScanRecord(), now, DEVICE_NO8_TEMP_SHIFT_DEGREES);
+                deviceNr8 = parseNewDevice(result.getScanRecord(), now, DEVICE_NO8_TEMP_SHIFT_DEGREES);
             } else if (DEVICE_NO09_MAC_ADDRESS.equals(deviceAddress)) {
                 deviceNr9 = parse(result.getScanRecord(), now, DEVICE_NO9_TEMP_SHIFT_DEGREES);
             } else if (DEVICE_NO10_MAC_ADDRESS.equals(deviceAddress)) {
                 deviceNr10 = parseNewDevice(result.getScanRecord(), now, DEVICE_N10_TEMP_SHIFT_DEGREES);
-                // REMOVE THIS EVIL HACK AS SOON AS THERE IS A NEW DEVICE TO BE SCANNED
-                deviceNr8 = parseNewDevice(result.getScanRecord(), now, DEVICE_N10_TEMP_SHIFT_DEGREES);
             }
             if (hasSampleData()) {
                 mHandler.removeCallbacks(stopScanAndProcessRunnable);
