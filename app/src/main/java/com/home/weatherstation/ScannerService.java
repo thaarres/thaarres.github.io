@@ -215,8 +215,12 @@ public class ScannerService extends Service {
         deviceNr10 = null; // reset samples!
     }
 
-    private boolean hasSampleData() {
+    private boolean hasAllSampleData() {
         return deviceNr8 != null && deviceNr9 != null && deviceNr10 != null;
+    }
+
+    private boolean hasAnySampleData() {
+        return deviceNr8 != null || deviceNr9 != null || deviceNr10 != null;
     }
 
 
@@ -252,7 +256,7 @@ public class ScannerService extends Service {
             } else if (DEVICE_NO10_MAC_ADDRESS.equals(deviceAddress)) {
                 deviceNr10 = parseNewDevice(result.getScanRecord(), now, DEVICE_N10_TEMP_SHIFT_DEGREES);
             }
-            if (hasSampleData()) {
+            if (hasAllSampleData()) {
                 mHandler.removeCallbacks(stopScanAndProcessRunnable);
                 stopScanAndProcessResults();
             }
@@ -268,13 +272,15 @@ public class ScannerService extends Service {
         long now = System.currentTimeMillis();
         Storage.storeLastScanTime(getBaseContext(), now);
 
-        if (hasSampleData()) {
+        if (hasAllSampleData()) {
             Storage.storeLastSuccessfulScanTime(getBaseContext(), now);
-            Date timestamp = deviceNr8.getTimestamp();
+        }
+        if (hasAnySampleData()) {
+            Date timestamp = deviceNr8 != null ? deviceNr8.getTimestamp() : (deviceNr9 != null ? deviceNr9.getTimestamp() : deviceNr10.getTimestamp());
             Log.i(TAG, "Processing samples timestamp=" + timestamp + "\n" + deviceNr8 + "\n" + deviceNr9 + "\n" + deviceNr10);
             UploadService.startUpload(this, timestamp, deviceNr8, deviceNr9, deviceNr10);
         } else {
-            Log.w(TAG, "Did not receive results from all devices! DeviceNo8=" + deviceNr8 + ", DeviceNo9=" + deviceNr9 + ", DeviceNo10=" + deviceNr10);
+            Log.w(TAG, "Did not receive any results from the devices!");
         }
 
         restartBT();

@@ -58,18 +58,26 @@ public class UploadService extends IntentService {
      * @see IntentService
      */
     public static void startUpload(Context context, final Date timestamp, final Sample sampleDeviceNo8, final Sample sampleDeviceNo9, final Sample sampleDeviceNo10) {
-        if (sampleDeviceNo8 == null || sampleDeviceNo9 == null) {
-            Log.w(TAG, "Not starting upload because not all parameters set. sampleDeviceNo8=" + sampleDeviceNo8 + ", sampleDeviceNo9=" + sampleDeviceNo9+ ", sampleDeviceNo10=" + sampleDeviceNo10);
+        if (sampleDeviceNo8 == null && sampleDeviceNo9 == null && sampleDeviceNo10 == null) {
+            Log.w(TAG, "Not starting upload because all samples are null");
             return;
         }
 
         Intent intent = new Intent(context, UploadService.class);
         intent.setAction(ACTION_UPLOAD);
         intent.putExtra(EXTRA_TIMESTAMP, timestamp.getTime());
-        intent.putExtra(EXTRA_SAMPLE_DEVICE8, sampleDeviceNo8);
-        intent.putExtra(EXTRA_SAMPLE_DEVICE9, sampleDeviceNo9);
-        intent.putExtra(EXTRA_SAMPLE_DEVICE10, sampleDeviceNo10);
+        intent.putExtra(EXTRA_SAMPLE_DEVICE8, getSample("Device8", sampleDeviceNo8));
+        intent.putExtra(EXTRA_SAMPLE_DEVICE9, getSample("Device9", sampleDeviceNo9));
+        intent.putExtra(EXTRA_SAMPLE_DEVICE10, getSample("Device10", sampleDeviceNo10));
         context.startService(intent);
+    }
+
+    private static Sample getSample(final String name, final Sample sample) {
+        if (sample == null) {
+            return new Sample(new Date(), name, Sample.NOT_SET_FLOAT, Sample.NOT_SET_INT);
+        } else {
+            return sample;
+        }
     }
 
 
@@ -159,7 +167,7 @@ public class UploadService extends IntentService {
             return new Sample(d, "Outside", tempCurrent, relHumid);
         } catch (Exception e) {
             e.printStackTrace();
-            return new Sample(new Date(), "Outside", Sample.NOT_SET_FLOAT, Sample.NOT_SET_INT);
+            return getSample("Outside", null);
         }
 
     }
@@ -180,23 +188,35 @@ public class UploadService extends IntentService {
      */
     private void insert(Date timestamp, Sample device8, Sample device9, Sample device10, Sample outside) throws IOException {
         CharSequence timestampValue = android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", timestamp);
-        insert(TEMPERATURE_TABLE_ID, timestampValue, device8.getTemperature(), device9.getTemperature(), device10.getTemperature(), outside.hasTempCurrent(), outside.getTemperature());
-        insert(HUMIDITY_TABLE_ID, timestampValue, device8.getRelativeHumidity(), device9.getRelativeHumidity(), device10.getRelativeHumidity(), outside.hasRelativeHumidity(), outside.getRelativeHumidity());
+        insert(TEMPERATURE_TABLE_ID, timestampValue, device8.hasTempCurrent(), device8.getTemperature(), device9.hasTempCurrent(), device9.getTemperature(), device10.hasTempCurrent(), device10.getTemperature(), outside.hasTempCurrent(), outside.getTemperature());
+        insert(HUMIDITY_TABLE_ID, timestampValue, device8.hasRelativeHumidity(), device8.getRelativeHumidity(), device9.hasRelativeHumidity(), device9.getRelativeHumidity(), device10.hasRelativeHumidity(), device10.getRelativeHumidity(), outside.hasRelativeHumidity(), outside.getRelativeHumidity());
     }
 
-    private void insert(String table, CharSequence timestamp, float device8Value, float device9Value, float device10Value, boolean outsideHasValue, float outsideValue) throws IOException {
-        insert(table, timestamp.toString(), DECIMAL_FORMAT.format(device8Value), DECIMAL_FORMAT.format(device9Value), DECIMAL_FORMAT.format(device10Value), outsideHasValue, String.valueOf(outsideValue));
+    private void insert(String table, CharSequence timestamp, boolean device8HasValue, float device8Value, boolean device9HasValue, float device9Value, boolean device10HasValue, float device10Value, boolean outsideHasValue, float outsideValue) throws IOException {
+        insert(table, timestamp.toString(), device8HasValue, DECIMAL_FORMAT.format(device8Value), device9HasValue, DECIMAL_FORMAT.format(device9Value), device10HasValue, DECIMAL_FORMAT.format(device10Value), outsideHasValue, DECIMAL_FORMAT.format(outsideValue));
     }
 
-    private void insert(String table, CharSequence timestamp, int device8Value, int device9Value, int device10Value, boolean outsideHasValue, int outsideValue) throws IOException {
-        insert(table, timestamp.toString(), String.valueOf(device8Value), String.valueOf(device9Value), String.valueOf(device10Value),outsideHasValue, String.valueOf(outsideValue));
+    private void insert(String table, CharSequence timestamp, boolean device8HasValue, int device8Value, boolean device9HasValue, int device9Value, boolean device10HasValue, int device10Value, boolean outsideHasValue, int outsideValue) throws IOException {
+        insert(table, timestamp.toString(), device8HasValue, String.valueOf(device8Value), device9HasValue, String.valueOf(device9Value), device10HasValue, String.valueOf(device10Value), outsideHasValue, String.valueOf(outsideValue));
     }
 
-    private void insert(String table, CharSequence timestamp, String device8Value, String device9Value, String device10Value, boolean outsideHasValue, String outsideValue) throws IOException {
+    private void insert(String table, CharSequence timestamp, boolean device8HasValue, String device8Value, boolean device9HasValue, String device9Value, boolean device10HasValue, String device10Value, boolean outsideHasValue, String outsideValue) throws IOException {
         // build insert statements
         String rawInsertStatement =
-                "INSERT INTO %s (Date,DeviceNo8,DeviceNo9,DeviceNo10" + (outsideHasValue ? ",Outside" : "") + ") " + "VALUES ('%s', %s, %s, %s" + (outsideHasValue ? ", " + outsideValue : "") + ")";
-        String insertStatement = String.format(rawInsertStatement, table, timestamp, device8Value, device9Value, device10Value);
+                "INSERT INTO %s (" +
+                        "Date" +
+                        (device8HasValue ? ",DeviceNo8" : "") +
+                        (device9HasValue ? ",DeviceNo9" : "") +
+                        (device10HasValue ? ",DeviceNo10" : "") +
+                        (outsideHasValue ? ",Outside" : "")
+                        + ") VALUES (" +
+                        "'%s'" +
+                        (device8HasValue ? ", " + device8Value : "") +
+                        (device9HasValue ? ", " + device9Value : "") +
+                        (device10HasValue ? ", " + device10Value : "") +
+                        (outsideHasValue ? ", " + outsideValue : "")
+                        + ")";
+        String insertStatement = String.format(rawInsertStatement, table, timestamp);
 
         Log.v(TAG, "Insert statement : " + insertStatement);
 
