@@ -11,6 +11,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.messaging.FirebaseMessaging;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -96,6 +98,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 2001) {
             if (resultCode == RESULT_OK) {
+                FirebaseMessaging.getInstance().subscribeToTopic("actions");
                 enableButtons(true);
                 Toast.makeText(this, "Authentication successful. Ready to upload ...", Toast.LENGTH_LONG).show();
             } else {

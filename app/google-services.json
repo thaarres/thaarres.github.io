@@ -1,7 +1,9 @@
 {
   "project_info": {
     "project_number": "64745461749",
-    "project_id": "weatherstation-1347"
+    "firebase_url": "https://weatherstation-1347.firebaseio.com",
+    "project_id": "weatherstation-1347",
+    "storage_bucket": "weatherstation-1347.appspot.com"
   },
   "client": [
     {
@@ -13,11 +15,15 @@
       },
       "oauth_client": [
         {
+          "client_id": "64745461749-ibf09nuhtdut8u207aqv0dhaedsp3rn1.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
           "client_id": "64745461749-j5h4f597mespb5bvgm89npo69g9p62bj.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.home.weatherstation",
-            "certificate_hash": "4D5BA01B73AD454EB00E7719D8B01683AE4AEED4"
+            "certificate_hash": "4d5ba01b73ad454eb00e7719d8b01683ae4aeed4"
           }
         },
         {
@@ -35,11 +41,16 @@
           "status": 1
         },
         "appinvite_service": {
-          "status": 1,
-          "other_platform_oauth_client": []
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "64745461749-ibf09nuhtdut8u207aqv0dhaedsp3rn1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         },
         "ads_service": {
-          "status": 1
+          "status": 2
         }
       }
     }
