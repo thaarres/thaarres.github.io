@@ -324,8 +324,9 @@ public class ScannerService extends Service {
         short tempCurrent = bytes.getShort(); // temp*10 (current)
         bytes.getShort();                     // temp*10 (highest)
         byte humidity = bytes.get();          // humidity in %
+        int battery = Sample.NOT_SET_INT;     // old device does not provide battery level
 
-        return new Sample(date, record.getDeviceName(), ((float) tempCurrent) / 10 + tempCalibrationShift, (int) humidity);
+        return new Sample(date, record.getDeviceName(), ((float) tempCurrent) / 10 + tempCalibrationShift, (int) humidity, battery);
     }
 
     // New (smaller and colored) devices. See app/external/Temperature-Humidity-Data-Logger-Commands-API.pdf for the protocol
@@ -333,7 +334,7 @@ public class ScannerService extends Service {
     private Sample parseNewDevice(ScanRecord record, Date date, float tempCalibrationShift) {
         ScanRecordParser parser = new ScanRecordParser(record.getBytes());
         BMTempHumi bmTempHumi = new BMTempHumi(parser.getManufacturerData(), parser.getScanResponseData());
-        return new Sample(date, record.getDeviceName(), (float) bmTempHumi.getCurrentTemperature() + tempCalibrationShift, (int) bmTempHumi.getCurrentHumidity());
+        return new Sample(date, record.getDeviceName(), (float) bmTempHumi.getCurrentTemperature() + tempCalibrationShift, (int) bmTempHumi.getCurrentHumidity(), bmTempHumi.getBatteryLevel());
     }
 
     public static long getNextScheduled(final Context context) {

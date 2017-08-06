@@ -39,6 +39,7 @@ public class UploadService extends IntentService {
 
     private static final String TEMPERATURE_TABLE_ID = "1jQ_Jnnw26pWU05sGBNdXbXlvxB-66_W4fuJgsTG7";
     private static final String HUMIDITY_TABLE_ID = "1sJHjpA2ToIvRbY0eksYhS1hfctq8yg-1H1KPhvaJ";
+    private static final String BATTERY_TABLE_ID = "13Oox5ACRRPJcaL8CigkkpveWUNV3ALDbEwWpmuvq";
     private static final String API_KEY_GOOGLE = "AIzaSyC6bt0RnAVIDwdj3eiSJBmrEPqTmQGDNkM";
 
     private static final String API_KEY_WUNDERGROUND = "6ad6fa3bdb22276d"; // https://www.wunderground.com/weather/api/d/6ad6fa3bdb22276d/edit.html
@@ -74,7 +75,7 @@ public class UploadService extends IntentService {
 
     private static Sample getSample(final String name, final Sample sample) {
         if (sample == null) {
-            return new Sample(new Date(), name, Sample.NOT_SET_FLOAT, Sample.NOT_SET_INT);
+            return new Sample(new Date(), name, Sample.NOT_SET_FLOAT, Sample.NOT_SET_INT, Sample.NOT_SET_INT);
         } else {
             return sample;
         }
@@ -138,10 +139,10 @@ public class UploadService extends IntentService {
             int relHumid = Integer.valueOf(currentObservation.getString("relative_humidity").replaceAll("%", ""));
             int pressure = currentObservation.getInt("pressure_in");
 
-            return new Sample(d, "Outside", tempCurrent, relHumid);
+            return new Sample(d, "Outside", tempCurrent, relHumid, Sample.NOT_SET_INT);
         } catch (Exception e) {
             e.printStackTrace();
-            return new Sample(new Date(), "Outside", Sample.NOT_SET_FLOAT, Sample.NOT_SET_INT);
+            return new Sample(new Date(), "Outside", Sample.NOT_SET_FLOAT, Sample.NOT_SET_INT, Sample.NOT_SET_INT);
         }
 
     }
@@ -164,7 +165,7 @@ public class UploadService extends IntentService {
             int relHumid = Integer.valueOf(currentObservation.getString("humidity"));
             int pressure = currentObservation.getInt("qfePressure");
 
-            return new Sample(d, "Outside", tempCurrent, relHumid);
+            return new Sample(d, "Outside", tempCurrent, relHumid, Sample.NOT_SET_INT);
         } catch (Exception e) {
             e.printStackTrace();
             return getSample("Outside", null);
@@ -190,6 +191,7 @@ public class UploadService extends IntentService {
         CharSequence timestampValue = android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", timestamp);
         insert(TEMPERATURE_TABLE_ID, timestampValue, device8.hasTempCurrent(), device8.getTemperature(), device9.hasTempCurrent(), device9.getTemperature(), device10.hasTempCurrent(), device10.getTemperature(), outside.hasTempCurrent(), outside.getTemperature());
         insert(HUMIDITY_TABLE_ID, timestampValue, device8.hasRelativeHumidity(), device8.getRelativeHumidity(), device9.hasRelativeHumidity(), device9.getRelativeHumidity(), device10.hasRelativeHumidity(), device10.getRelativeHumidity(), outside.hasRelativeHumidity(), outside.getRelativeHumidity());
+        insert(BATTERY_TABLE_ID, timestampValue, device8.hasBatteryLevelCurrent(), device8.getBatteryLevel(), device9.hasBatteryLevelCurrent(), device9.getBatteryLevel(), device10.hasBatteryLevelCurrent(), device10.getBatteryLevel(), outside.hasBatteryLevelCurrent(), outside.getBatteryLevel());
     }
 
     private void insert(String table, CharSequence timestamp, boolean device8HasValue, float device8Value, boolean device9HasValue, float device9Value, boolean device10HasValue, float device10Value, boolean outsideHasValue, float outsideValue) throws IOException {

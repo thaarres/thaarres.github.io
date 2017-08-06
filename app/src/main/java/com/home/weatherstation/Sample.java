@@ -16,12 +16,14 @@ public class Sample implements Parcelable {
     private String deviceName;
     private float temperature;
     private int relativeHumidity;
+    private int batteryLevel;
 
-    public Sample(final Date timestamp, String deviceName, final float temperature, final int relativeHumidity) {
+    public Sample(final Date timestamp, String deviceName, final float temperature, final int relativeHumidity, final int batteryLevel) {
         this.timestamp = timestamp;
         this.deviceName = deviceName;
         this.temperature = temperature;
         this.relativeHumidity = relativeHumidity;
+        this.batteryLevel = batteryLevel;
     }
 
     public Sample(Parcel in) {
@@ -54,7 +56,9 @@ public class Sample implements Parcelable {
         return temperature;
     }
 
-    public boolean hasTempCurrent() { return temperature != NOT_SET_FLOAT; }
+    public boolean hasTempCurrent() {
+        return temperature != NOT_SET_FLOAT;
+    }
 
     public int getRelativeHumidity() {
         return relativeHumidity;
@@ -64,6 +68,14 @@ public class Sample implements Parcelable {
         return relativeHumidity != NOT_SET_INT;
     }
 
+    public int getBatteryLevel() {
+        return batteryLevel;
+    }
+
+    public boolean hasBatteryLevelCurrent() {
+        return batteryLevel != NOT_SET_INT;
+    }
+
     @Override
     public String toString() {
         return "Sample{" +
@@ -71,6 +83,7 @@ public class Sample implements Parcelable {
                 ", deviceName='" + deviceName + '\'' +
                 ", temperature=" + temperature +
                 ", relativeHumidity=" + relativeHumidity +
+                ", batteryLevel=" + batteryLevel +
                 '}';
     }
 
@@ -85,6 +98,7 @@ public class Sample implements Parcelable {
         dest.writeString(deviceName);
         dest.writeFloat(temperature);
         dest.writeInt(relativeHumidity);
+        dest.writeInt(batteryLevel);
     }
 
     private void readFromParcel(Parcel in) {
@@ -95,6 +109,7 @@ public class Sample implements Parcelable {
         deviceName = in.readString();
         temperature = in.readFloat();
         relativeHumidity = in.readInt();
+        batteryLevel = in.readInt();
     }
 
 }
