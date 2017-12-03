@@ -46,7 +46,7 @@ public class UploadService extends IntentService {
     private static final String WUNDERGROUND_STATION_URL = "https://api.wunderground.com/api/" + API_KEY_WUNDERGROUND + "/conditions/q/ch/zuerich-kreis-4-hard/zmw:00000.71.06660.json";
     private static final String SMN_STATION_URL = "http://data.netcetera.com:80/smn/smn/REH"; // http://data.netcetera.com/smn/
 
-    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#.0");
+    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.0");
 
     public UploadService() {
         super("UploadService");
@@ -220,7 +220,7 @@ public class UploadService extends IntentService {
                         + ")";
         String insertStatement = String.format(rawInsertStatement, table, timestamp);
 
-        Log.v(TAG, "Insert statement : " + insertStatement);
+        Log.d(TAG, "Insert statement : " + insertStatement);
 
         // Encode the query
         String query = URLEncoder.encode(insertStatement);
@@ -229,12 +229,18 @@ public class UploadService extends IntentService {
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Authorization", "Bearer " + getToken());
 
-        // read the response
         Log.i(TAG, "Response Code: " + conn.getResponseCode());
-        InputStream in = new BufferedInputStream(conn.getInputStream());
-        String response = org.apache.commons.io.IOUtils.toString(in, "UTF-8");
-        Log.v(TAG, response);
+        Log.i(TAG, "Response Message: " + conn.getResponseMessage());
 
+        // read the response
+        BufferedInputStream bis;
+        if (200 <= conn.getResponseCode() && conn.getResponseCode() <= 299) {
+            bis = new BufferedInputStream(conn.getInputStream());
+        } else {
+            bis = new BufferedInputStream(conn.getErrorStream());
+        }
+        String response = org.apache.commons.io.IOUtils.toString(bis, "UTF-8");
+        Log.v(TAG, response);
     }
 
     private String getToken() {
