@@ -44,7 +44,7 @@ public class UploadService extends IntentService {
 
     private static final String API_KEY_WUNDERGROUND = "6ad6fa3bdb22276d"; // https://www.wunderground.com/weather/api/d/6ad6fa3bdb22276d/edit.html
     private static final String WUNDERGROUND_STATION_URL = "https://api.wunderground.com/api/" + API_KEY_WUNDERGROUND + "/conditions/q/ch/zuerich-kreis-4-hard/zmw:00000.71.06660.json";
-    private static final String SMN_STATION_URL = "http://data.netcetera.com:80/smn/smn/REH"; // http://data.netcetera.com/smn/
+    private static final String SMN_STATION_URL = "https://opendata.netcetera.com/smn/smn/REH";
 
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.0");
 
