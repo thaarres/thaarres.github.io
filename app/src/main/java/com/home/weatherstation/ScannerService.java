@@ -39,10 +39,16 @@ public class ScannerService extends Service {
     private static final String DEVICE_NO09_MAC_ADDRESS = "FA:67:91:00:D7:B2";
     private static final String DEVICE_NO10_MAC_ADDRESS = "DC:6C:14:1C:96:97";
 
-    // Temperature calibration
-    private static final float DEVICE_NO8_TEMP_SHIFT_DEGREES = -0.1f;
-    private static final float DEVICE_NO9_TEMP_SHIFT_DEGREES = 0.2f;
-    private static final float DEVICE_N10_TEMP_SHIFT_DEGREES = 0.1f;
+    // Temperature calibration shift
+    private static final float DEVICE_NO8_TEMP_SHIFT_DEGREES = -0.1f; // new device
+    private static final float DEVICE_NO9_TEMP_SHIFT_DEGREES = 0.1f;  // old device
+    private static final float DEVICE_N10_TEMP_SHIFT_DEGREES = 0.0f;  // new device
+
+    // Relative Humidity calibration multiplier (calibrated at 23.9deg and relHum 75%)
+    private static final double DEVICE_NO8_RELHUM_CALIBRATION = 0.89d;
+    private static final double DEVICE_NO9_RELHUM_CALIBRATION = 1.04d;
+    private static final double DEVICE_N10_RELHUM_CALIBRATION = 1.01d;
+
 
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothLeScanner mLEScanner;
@@ -250,11 +256,11 @@ public class ScannerService extends Service {
             Date now = new Date();
             String deviceAddress = result.getDevice().getAddress();
             if (DEVICE_NO08_MAC_ADDRESS.equals(deviceAddress)) {
-                deviceNr8 = parseNewDevice(result.getScanRecord(), now, DEVICE_NO8_TEMP_SHIFT_DEGREES);
+                deviceNr8 = parseNewDevice(result.getScanRecord(), now, DEVICE_NO8_TEMP_SHIFT_DEGREES, DEVICE_NO8_RELHUM_CALIBRATION);
             } else if (DEVICE_NO09_MAC_ADDRESS.equals(deviceAddress)) {
-                deviceNr9 = parse(result.getScanRecord(), now, DEVICE_NO9_TEMP_SHIFT_DEGREES);
+                deviceNr9 = parse(result.getScanRecord(), now, DEVICE_NO9_TEMP_SHIFT_DEGREES, DEVICE_NO9_RELHUM_CALIBRATION);
             } else if (DEVICE_NO10_MAC_ADDRESS.equals(deviceAddress)) {
-                deviceNr10 = parseNewDevice(result.getScanRecord(), now, DEVICE_N10_TEMP_SHIFT_DEGREES);
+                deviceNr10 = parseNewDevice(result.getScanRecord(), now, DEVICE_N10_TEMP_SHIFT_DEGREES, DEVICE_N10_RELHUM_CALIBRATION);
             }
             if (hasAllSampleData()) {
                 mHandler.removeCallbacks(stopScanAndProcessRunnable);
@@ -308,7 +314,7 @@ public class ScannerService extends Service {
 
     // Old (bigger) devices
     @Nullable
-    private Sample parse(ScanRecord record, Date date, float tempCalibrationShift) {
+    private Sample parse(ScanRecord record, Date date, float tempCalibrationShift, double relhumCalibrationMultiplier) {
 
         byte[] manufacturerSpecData = record.getManufacturerSpecificData().valueAt(0);
 
@@ -326,15 +332,15 @@ public class ScannerService extends Service {
         byte humidity = bytes.get();          // humidity in %
         int battery = Sample.NOT_SET_INT;     // old device does not provide battery level
 
-        return new Sample(date, record.getDeviceName(), ((float) tempCurrent) / 10 + tempCalibrationShift, (int) humidity, battery);
+        return new Sample(date, record.getDeviceName(), ((float) tempCurrent) / 10 + tempCalibrationShift, (int) Math.round(((int) humidity) * relhumCalibrationMultiplier), battery);
     }
 
     // New (smaller and colored) devices. See app/external/Temperature-Humidity-Data-Logger-Commands-API.pdf for the protocol
     @Nullable
-    private Sample parseNewDevice(ScanRecord record, Date date, float tempCalibrationShift) {
+    private Sample parseNewDevice(ScanRecord record, Date date, float tempCalibrationShift, double relhumCalibrationMultiplier) {
         ScanRecordParser parser = new ScanRecordParser(record.getBytes());
         BMTempHumi bmTempHumi = new BMTempHumi(parser.getManufacturerData(), parser.getScanResponseData());
-        return new Sample(date, record.getDeviceName(), (float) bmTempHumi.getCurrentTemperature() + tempCalibrationShift, (int) bmTempHumi.getCurrentHumidity(), bmTempHumi.getBatteryLevel());
+        return new Sample(date, record.getDeviceName(), (float) bmTempHumi.getCurrentTemperature() + tempCalibrationShift, (int) Math.round(bmTempHumi.getCurrentHumidity() * relhumCalibrationMultiplier), bmTempHumi.getBatteryLevel());
     }
 
     public static long getNextScheduled(final Context context) {
