@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="com.home.weatherstation.MainActivity">
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                tools:context="com.home.weatherstation.MainActivity">
 
     <TextView
         android:id="@+id/status"
@@ -11,9 +11,9 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="40dp"
-        android:text="Scheduler: ON"
         android:gravity="center"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+        android:text="Scheduler: ON"
+        android:textAppearance="?android:attr/textAppearanceLarge"/>
 
     <LinearLayout
         android:id="@+id/schedulerbuttons_container"
@@ -27,14 +27,14 @@
             style="@style/Widget.AppCompat.Button.Colored"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Start\nScheduler" />
+            android:text="Start\nScheduler"/>
 
         <Button
             android:id="@+id/stop_button"
             style="@style/Widget.AppCompat.Button.Colored"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Stop\nScheduler" />
+            android:text="Stop\nScheduler"/>
     </LinearLayout>
 
     <LinearLayout
@@ -52,13 +52,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:width="150dp"
-            android:text="Last scan: " />
+            android:text="Last scan: "/>
 
         <TextView
             android:id="@+id/last_scan_attempt_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="26.06.2016 15:58" />
+            android:text="26.06.2016 15:58"/>
 
     </LinearLayout>
 
@@ -76,13 +76,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:width="150dp"
-            android:text="Last successful scan: " />
+            android:text="Last successful scan: "/>
 
         <TextView
             android:id="@+id/last_scan_success_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="26.06.2016 18:58" />
+            android:text="26.06.2016 18:58"/>
     </LinearLayout>
 
     <LinearLayout
@@ -99,13 +99,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:width="150dp"
-            android:text="Last upload: " />
+            android:text="Last upload: "/>
 
         <TextView
             android:id="@+id/last_upload_success_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="26.06.2016 18:58" />
+            android:text="26.06.2016 18:58"/>
     </LinearLayout>
 
     <Button
@@ -116,26 +116,26 @@
         android:layout_below="@id/linearLayout3"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="40dp"
-        android:text="Scan and Upload" />
+        android:text="Scan and Upload"/>
 
     <TextView
+        android:id="@+id/version"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/version"
-        android:text="1.0"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginStart="4dp"/>
+        android:layout_marginStart="4dp"
+        android:text="1.0"/>
 
     <TextView
+        android:id="@+id/versionText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/versionText"
         android:layout_alignTop="@+id/version"
         android:layout_toStartOf="@+id/version"
-        android:text="Version" />
+        android:text="Version"/>
 
 
 </RelativeLayout>
