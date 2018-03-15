@@ -117,7 +117,27 @@
 
             function cb(start, end) {
                 $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
-                draw(start.format('YYYY-MM-DD HH:mm'), end.format('YYYY-MM-DD HH:mm'));
+
+                if (start < 0) {
+                    var url = "";
+                    var datatype = document.getElementById('datatype').value;
+                    switch (datatype) {
+                        case 'Humidity':
+                            url = "https://fusiontables.google.com/embedviz?containerId=googft-gviz-canvas&viz=GVIZ&t=LINE_AGGREGATE&isXyPlot=true&bsize=0.0&q=select+col3%2C+col7%2C+col1%2C+col9%2C+col8+from+1sJHjpA2ToIvRbY0eksYhS1hfctq8yg-1H1KPhvaJ&qrs=+where+col3+%3E%3D+&qre=+and+col3+%3C%3D+&qe=+order+by+col3+asc&uiversion=2&rstart=2016%2F10%2F13+10%3A15%3A56&rend=2018%2F3%2F15+21%3A40%3A21&gco_forceIFrame=true&gco_hasLabelsColumn=true&width=500&height=300";
+                            break;
+                        case 'Pressure':
+                        case 'Temperature':
+                            url = "https://fusiontables.google.com/embedviz?containerId=googft-gviz-canvas&viz=GVIZ&t=LINE_AGGREGATE&isXyPlot=true&bsize=0.0&q=select+col3%2C+col7%2C+col1%2C+col9%2C+col8+from+1jQ_Jnnw26pWU05sGBNdXbXlvxB-66_W4fuJgsTG7&qrs=+where+col3+%3E%3D+&qre=+and+col3+%3C%3D+&qe=+order+by+col3+asc&uiversion=2&rstart=2016%2F7%2F7+12%3A23%3A46&rend=2017%2F6%2F25+22%3A15%3A34&gco_forceIFrame=true&gco_hasLabelsColumn=true&width=500&height=300";
+                            break;
+                        case 'Battery':
+                            url = "https://fusiontables.google.com/embedviz?containerId=googft-gviz-canvas&viz=GVIZ&t=LINE_AGGREGATE&isXyPlot=true&bsize=0.0&q=select+col3%2C+col7%2C+col1%2C+col9+from+13Oox5ACRRPJcaL8CigkkpveWUNV3ALDbEwWpmuvq&qrs=+where+col3+%3E%3D+&qre=+and+col3+%3C%3D+&qe=+order+by+col3+asc&uiversion=2&rstart=2017%2F6%2F25+15%3A30%3A0&rend=2017%2F6%2F25+22%3A15%3A34&gco_forceIFrame=true&gco_hasLabelsColumn=true&width=500&height=300"
+                            break;
+                    }
+                    window.open(url, '_blank');
+                } else {
+                    $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+                    draw(start.format('YYYY-MM-DD HH:mm'), end.format('YYYY-MM-DD HH:mm'));
+                }
             }
 
             $('#reportrange').daterangepicker({
@@ -127,7 +147,8 @@
                    'Last 24h': [moment().subtract(23, 'hours'), moment()],
                    'Last 3 Days': [moment().subtract(2, 'days'), moment()],
                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-                   'Last 30 Days': [moment().subtract(29, 'days'), moment()]
+                   'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                   'All time': [-1, moment()]
                 }
             }, cb);
 
@@ -216,51 +237,6 @@
                 }
             });
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     </script>
