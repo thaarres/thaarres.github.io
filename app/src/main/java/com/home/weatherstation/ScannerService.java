@@ -18,6 +18,8 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -48,6 +50,8 @@ public class ScannerService extends Service {
     private static final double DEVICE_NO8_RELHUM_CALIBRATION = 0.89d;
     private static final double DEVICE_NO9_RELHUM_CALIBRATION = 1.04d;
     private static final double DEVICE_N10_RELHUM_CALIBRATION = 1.01d;
+
+    private static final long MAX_INOMPLETE_SAMPLING_ATTEMPTS = 3;
 
 
     private BluetoothAdapter mBluetoothAdapter;
@@ -280,6 +284,14 @@ public class ScannerService extends Service {
 
         if (hasAllSampleData()) {
             Storage.storeLastSuccessfulScanTime(getBaseContext(), now);
+            Storage.storeIncompleteScans(getBaseContext(), 0);
+        } else {
+            long i = Storage.readIncompleteScans(getBaseContext());
+            i++;
+            Storage.storeIncompleteScans(getBaseContext(), i);
+            if (i == MAX_INOMPLETE_SAMPLING_ATTEMPTS) {
+                Crashlytics.logException(new Exception(String.format("%d incomplete scans in a row!", i)));
+            }
         }
         if (hasAnySampleData()) {
             Date timestamp = deviceNr8 != null ? deviceNr8.getTimestamp() : (deviceNr9 != null ? deviceNr9.getTimestamp() : deviceNr10.getTimestamp());

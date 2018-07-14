@@ -27,6 +27,10 @@ public class Storage {
         return read(context, "last_successful_scan_time");
     }
 
+    public static long readIncompleteScans(Context context) {
+        return read(context, "incomplete_scans");
+    }
+
     public static long readLastUploadTime(Context context) {
         return read(context, "last_upload_time");
     }
@@ -43,6 +47,12 @@ public class Storage {
     public static void storeLastSuccessfulScanTime(Context context, long timestamp) {
         write(context, "last_successful_scan_time", timestamp);
     }
+
+
+    public static void storeIncompleteScans(Context context, long incompleteScans) {
+        write(context, "incomplete_scans", incompleteScans);
+    }
+
 
     public static void storeLastUploadTime(Context context, long timestamp) {
         write(context, "last_upload_time", timestamp);

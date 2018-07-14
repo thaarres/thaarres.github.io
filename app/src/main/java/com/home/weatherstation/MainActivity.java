@@ -27,6 +27,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     private TextView lastScanTime;
     private TextView lastSuccessfulScanTime;
     private TextView lastUploadTime;
+    private TextView incompleteScans;
 
     private Button scanAndUploadNowButton;
 
@@ -63,6 +64,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         lastScanTime = (TextView) findViewById(R.id.last_scan_attempt_time);
         lastSuccessfulScanTime = (TextView) findViewById(R.id.last_scan_success_time);
         lastUploadTime = (TextView) findViewById(R.id.last_upload_success_time);
+        incompleteScans = (TextView) findViewById(R.id.incomplete_scans);
 
         String version = "??";
         try {
@@ -158,6 +160,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         lastScanTime.setText(android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", Storage.readLastScanTime(this)));
         lastSuccessfulScanTime.setText(android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", Storage.readLastSuccessfulScanTime(this)));
         lastUploadTime.setText(android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", Storage.readLastUploadTime(this)));
+        incompleteScans.setText(String.valueOf(Storage.readIncompleteScans(this)));
     }
 
     @Override
