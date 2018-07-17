@@ -19,6 +19,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.crashlytics.android.Crashlytics;
+import com.creativityapps.gmailbackgroundlibrary.BackgroundMail;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -284,24 +285,60 @@ public class ScannerService extends Service {
 
         if (hasAllSampleData()) {
             Storage.storeLastSuccessfulScanTime(getBaseContext(), now);
-            Storage.storeIncompleteScans(getBaseContext(), 0);
+            Storage.storeIncompleteScans(getBaseContext(), 0); // reset
+            upload();
         } else {
-            long i = Storage.readIncompleteScans(getBaseContext());
-            i++;
-            Storage.storeIncompleteScans(getBaseContext(), i);
-            if (i == MAX_INOMPLETE_SAMPLING_ATTEMPTS) {
-                Crashlytics.logException(new Exception(String.format("%d incomplete scans in a row!", i)));
+            handleIncompleteScan();
+
+            if (hasAnySampleData()) {
+                upload();
+            } else {
+                Log.w(TAG, "Did not receive any results from the devices!");
             }
-        }
-        if (hasAnySampleData()) {
-            Date timestamp = deviceNr8 != null ? deviceNr8.getTimestamp() : (deviceNr9 != null ? deviceNr9.getTimestamp() : deviceNr10.getTimestamp());
-            Log.i(TAG, "Processing samples timestamp=" + timestamp + "\n" + deviceNr8 + "\n" + deviceNr9 + "\n" + deviceNr10);
-            UploadService.startUpload(this, timestamp, deviceNr8, deviceNr9, deviceNr10);
-        } else {
-            Log.w(TAG, "Did not receive any results from the devices!");
         }
 
         restartBT();
+    }
+
+    private void upload() {
+        Date timestamp = deviceNr8 != null ? deviceNr8.getTimestamp() : (deviceNr9 != null ? deviceNr9.getTimestamp() : deviceNr10.getTimestamp());
+        Log.i(TAG, "Processing samples timestamp=" + timestamp + "\n" + deviceNr8 + "\n" + deviceNr9 + "\n" + deviceNr10);
+        UploadService.startUpload(this, timestamp, deviceNr8, deviceNr9, deviceNr10);
+    }
+
+    private void handleIncompleteScan() {
+        long incompleteScans = Storage.readIncompleteScans(getBaseContext());
+        incompleteScans++;
+        Storage.storeIncompleteScans(getBaseContext(), incompleteScans);
+        Log.i(TAG, "Handling incomplete scan result. Incomplete Scans=" + incompleteScans + " of max " + MAX_INOMPLETE_SAMPLING_ATTEMPTS);
+        if (incompleteScans == MAX_INOMPLETE_SAMPLING_ATTEMPTS) {
+            sendIncompleteScansAlert(incompleteScans);
+        }
+    }
+
+    private void sendIncompleteScansAlert(long numberOfIncompleteScans) {
+        Log.i(TAG, "Sending incomplete scan alert email...");
+        BackgroundMail.newBuilder(this)
+                .withUsername(BuildConfig.ALERT_EMAIL_FROM)
+                .withPassword(BuildConfig.ALERT_EMAIL_PASSWORD)
+                .withMailto(BuildConfig.ALERT_EMAIL_TO)
+                .withType(BackgroundMail.TYPE_PLAIN)
+                .withSubject(String.format("%s Alert: Incomplete scans", getString(R.string.app_name)))
+                .withBody(String.format("%d incomplete scans in a row!", numberOfIncompleteScans))
+                .withProcessVisibility(false)
+                .withOnSuccessCallback(new BackgroundMail.OnSuccessCallback() {
+                    @Override
+                    public void onSuccess() {
+                        Log.i(TAG, "Successfully sent Incomplete Scans Alert Email");
+                    }
+                })
+                .withOnFailCallback(new BackgroundMail.OnFailCallback() {
+                    @Override
+                    public void onFail() {
+                        Crashlytics.logException(new Exception("Failed to send Incomplete Scans Alert Email"));
+                    }
+                })
+                .send();
     }
 
     private void restartBT() {

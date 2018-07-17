@@ -9,3 +9,7 @@
 # header note.
 #Thu Jun 23 22:49:52 CEST 2016
 sdk.dir=/Users/dominic/Library/Android/sdk
+
+alert.email.from=user@mail.com
+alert.email.password=verysecretpassword
+alert.email.to=other@mail.com

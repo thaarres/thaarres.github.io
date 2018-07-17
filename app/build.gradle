@@ -24,7 +24,26 @@ android {
         versionCode 1
         versionName "1.6.1"
     }
+
+
     buildTypes {
+        debug {
+            def Properties p = new Properties();
+            File localProperties = project.rootProject.file('local.properties')
+            if (localProperties.exists()) {
+                p.load(new FileInputStream(localProperties))
+                //if (!p.hasProperty('alert.email.from') || !p.hasProperty('alert.email.password') || !p.hasProperty('alert.email.to')) {
+                //    throw new IllegalStateException("Missing properties in local.properties")
+                //}
+            } else {
+                throw new IllegalStateException("local.properties could not be located")
+            }
+
+            buildConfigField "String", "ALERT_EMAIL_FROM", "\"" + p['alert.email.from'] + "\""
+            buildConfigField "String", "ALERT_EMAIL_PASSWORD", "\"" + p['alert.email.password'] + "\""
+            buildConfigField "String", "ALERT_EMAIL_TO", "\"" + p['alert.email.to'] + "\""
+        }
+
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
@@ -39,6 +58,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-core:16.0.1'
     implementation 'com.google.firebase:firebase-messaging:17.1.0'
     implementation 'com.crashlytics.sdk.android:crashlytics:2.9.4'
+    implementation 'com.github.yesidlazaro:GmailBackground:1.2.0'
     testImplementation 'junit:junit:4.12'
 }
 
