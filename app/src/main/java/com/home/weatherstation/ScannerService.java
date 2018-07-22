@@ -159,13 +159,13 @@ public class ScannerService extends Service {
     private void scheduleNextScan() {
         Log.i(TAG, "Scheduling next scan ...");
         alarmIntent = PendingIntent.getService(this, 0, buildScanAndUploadAndScheduleNextIntent(this), PendingIntent.FLAG_UPDATE_CURRENT);
-        long triggerTime = calculateNextTwenyMinsInMillis();
+        long triggerTime = calculateNextTwentyMinsInMillis();
         alarmMgr.setAlarmClock(new AlarmManager.AlarmClockInfo(triggerTime, PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT)), alarmIntent);
         Log.i(TAG, "Next scan scheduled at " + new Date(triggerTime));
         Storage.storeNextScheduledScanTime(this, triggerTime);
     }
 
-    private static long calculateNextTwenyMinsInMillis() {
+    private static long calculateNextTwentyMinsInMillis() {
         Calendar cal = Calendar.getInstance();
         int currentHourOfDay = cal.get(Calendar.HOUR_OF_DAY);
         int currentMinuteOfHour = cal.get(Calendar.MINUTE);
@@ -287,6 +287,7 @@ public class ScannerService extends Service {
             Storage.storeLastSuccessfulScanTime(getBaseContext(), now);
             Storage.storeIncompleteScans(getBaseContext(), 0); // reset
             upload();
+            UploadService.checkThresholds(this); // could be done only once a day instead of for every scan cycle
         } else {
             handleIncompleteScan();
 

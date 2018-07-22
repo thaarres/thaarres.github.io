@@ -22,7 +22,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 26
         versionCode 1
-        versionName "1.6.1"
+        versionName "1.6.2"
     }
 
 
@@ -59,6 +59,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-messaging:17.1.0'
     implementation 'com.crashlytics.sdk.android:crashlytics:2.9.4'
     implementation 'com.github.yesidlazaro:GmailBackground:1.2.0'
+    implementation 'org.json:json:20171018'
     testImplementation 'junit:junit:4.12'
 }
 

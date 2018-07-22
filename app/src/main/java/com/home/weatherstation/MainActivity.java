@@ -14,6 +14,7 @@ import android.widget.Toast;
 import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -27,7 +28,10 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     private TextView lastScanTime;
     private TextView lastSuccessfulScanTime;
     private TextView lastUploadTime;
+    private TextView lastIncompleteScansAlertTime;
     private TextView incompleteScans;
+    private TextView avgHumidity;
+    private TextView thresholdAlertHumidity;
 
     private Button scanAndUploadNowButton;
 
@@ -65,6 +69,9 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         lastSuccessfulScanTime = (TextView) findViewById(R.id.last_scan_success_time);
         lastUploadTime = (TextView) findViewById(R.id.last_upload_success_time);
         incompleteScans = (TextView) findViewById(R.id.incomplete_scans);
+        lastIncompleteScansAlertTime = (TextView) findViewById(R.id.incomplete_scans_alert_time);
+        avgHumidity = (TextView) findViewById(R.id.avg_hum);
+        thresholdAlertHumidity = (TextView) findViewById(R.id.hum_threshold_alert);
 
         String version = "??";
         try {
@@ -160,7 +167,24 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         lastScanTime.setText(android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", Storage.readLastScanTime(this)));
         lastSuccessfulScanTime.setText(android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", Storage.readLastSuccessfulScanTime(this)));
         lastUploadTime.setText(android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", Storage.readLastUploadTime(this)));
+
         incompleteScans.setText(String.valueOf(Storage.readIncompleteScans(this)));
+        long millis = Storage.readLastIncompleteScanAlertTime(this);
+        if (millis > -1) {
+            lastIncompleteScansAlertTime.setText(android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", millis));
+        } else {
+            lastIncompleteScansAlertTime.setText("-");
+        }
+
+        avgHumidity.setText(new DecimalFormat("#.##").format(Storage.readAverageHumidity(this)));
+        millis = Storage.readThresholdExceededHumidity(this);
+        if (millis > -1) {
+            thresholdAlertHumidity.setText(android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", millis));
+        } else {
+            thresholdAlertHumidity.setText("-");
+        }
+
+
     }
 
     @Override

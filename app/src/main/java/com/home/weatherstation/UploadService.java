@@ -5,11 +5,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import com.creativityapps.gmailbackgroundlibrary.BackgroundMail;
+
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -17,6 +23,7 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -31,6 +38,8 @@ public class UploadService extends IntentService {
     private static final String TAG = UploadService.class.getSimpleName();
 
     private static final String ACTION_UPLOAD = "com.home.weatherstation.action.upload";
+    private static final String ACTION_CHECK_THRESHOLDS = "com.home.weatherstation.action.checkthresholds";
+
 
     private static final String EXTRA_TIMESTAMP = "com.home.weatherstation.extra.timestamp";
     private static final String EXTRA_SAMPLE_DEVICE8 = "com.home.weatherstation.extra.sampledevice8";
@@ -46,10 +55,22 @@ public class UploadService extends IntentService {
     private static final String WUNDERGROUND_STATION_URL = "https://api.wunderground.com/api/" + API_KEY_WUNDERGROUND + "/conditions/q/ch/zuerich-kreis-4-hard/zmw:00000.71.06660.json";
     private static final String SMN_STATION_URL = "https://opendata.netcetera.com/smn/smn/REH";
 
+    private static final float UPPER_THRESHOLD_HUMIDITY = 60.0f;
+    private static final float LOWER_THRESHOLD_HUMIDITY = 43.0f;
+
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.0");
 
     public UploadService() {
         super("UploadService");
+    }
+
+    /**
+     * Sends an alert if the average value for the last 7 days is below or above the thresholds.
+     */
+    public static void checkThresholds(final Context context) {
+        Intent intent = new Intent(context, UploadService.class);
+        intent.setAction(ACTION_CHECK_THRESHOLDS);
+        context.startService(intent);
     }
 
     /**
@@ -58,7 +79,7 @@ public class UploadService extends IntentService {
      *
      * @see IntentService
      */
-    public static void startUpload(Context context, final Date timestamp, final Sample sampleDeviceNo8, final Sample sampleDeviceNo9, final Sample sampleDeviceNo10) {
+    public static void startUpload(final Context context, final Date timestamp, final Sample sampleDeviceNo8, final Sample sampleDeviceNo9, final Sample sampleDeviceNo10) {
         if (sampleDeviceNo8 == null && sampleDeviceNo9 == null && sampleDeviceNo10 == null) {
             Log.w(TAG, "Not starting upload because all samples are null");
             return;
@@ -95,6 +116,8 @@ public class UploadService extends IntentService {
                 final Sample sampleOutside = fetchCurrentConditionsOutsideSMN();
                 Log.i(TAG, "" + sampleOutside);
                 upload(timestamp, sampleDevice8, sampleDevice9, sampleDevice10, sampleOutside);
+            } else if (ACTION_CHECK_THRESHOLDS.equals(action)) {
+                checkThresholds();
             } else {
                 Log.w(TAG, "Unknown action: " + action);
             }
@@ -243,9 +266,132 @@ public class UploadService extends IntentService {
         Log.v(TAG, response);
     }
 
+    private void checkThresholds() {
+        int lastXdays = -4;
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DAY_OF_YEAR, lastXdays);
+        try {
+            float average = queryAvgSince(HUMIDITY_TABLE_ID, cal.getTime());
+            Storage.storeAverageHumidity(this, average);
+            if (average < LOWER_THRESHOLD_HUMIDITY || average > UPPER_THRESHOLD_HUMIDITY) {
+                Storage.storeThresholdExceededHumidity(this, System.currentTimeMillis());
+                sendThresholdExceededAlert("Humidity", average, lastXdays, LOWER_THRESHOLD_HUMIDITY, UPPER_THRESHOLD_HUMIDITY);
+            } else {
+                Storage.removeThresholdExceededHumidity(this);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void sendThresholdExceededAlert(String tableName, double exceedingValue, int lastXdays, float lowerThreshold, float upperThreshold) {
+        Log.i(TAG, "Sending Threshold Exceeded alert email...");
+        BackgroundMail.newBuilder(this)
+                .withUsername(BuildConfig.ALERT_EMAIL_FROM)
+                .withPassword(BuildConfig.ALERT_EMAIL_PASSWORD)
+                .withMailto(BuildConfig.ALERT_EMAIL_TO)
+                .withType(BackgroundMail.TYPE_PLAIN)
+                .withSubject(String.format("%s Alert: %s threshold exceeded", getString(R.string.app_name), tableName))
+                .withBody(String.format("Measured avg. for the last %d days = %s \n" +
+                        "Lower threshold = %s\n" +
+                        "Upper threshold = %s", lastXdays, new DecimalFormat("#.##").format(exceedingValue), new DecimalFormat("#.##").format(lowerThreshold), new DecimalFormat("#.##").format(upperThreshold)))
+                .withProcessVisibility(false)
+                // callback doesn't work with this IntentService
+//                .withOnSuccessCallback(new BackgroundMail.OnSuccessCallback() {
+//                    @Override
+//                    public void onSuccess() {
+//                        Log.i(TAG, "Successfully sent Threshold Exceeded Alert Email");
+//                    }
+//                })
+//                .withOnFailCallback(new BackgroundMail.OnFailCallback() {
+//                    @Override
+//                    public void onFail() {
+//                        Crashlytics.logException(new Exception("Failed to send Threshold Exceeded Alert Email"));
+//                    }
+//                })
+                .send();
+    }
+
+    public float queryAvgSince(String table, Date timestamp) throws IOException, JSONException {
+        CharSequence timestampValue = android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", timestamp);
+        String avgDevice = "avgDevice";
+        String avgOutside = "avgOutside";
+        String countDevice = "countDevice";
+        String countOutside = "countOutside";
+        String rawQueryStatement =
+                "SELECT COUNT(DeviceNo8) as " + countDevice + "8, " +
+                        "COUNT(DeviceNo9) as " + countDevice + "9, " +
+                        "COUNT(DeviceNo10) as " + countDevice + "10, " +
+                        "COUNT(Outside) as " + countOutside + ", " +
+                        "AVERAGE(DeviceNo8) as " + avgDevice + "8, " +
+                        "AVERAGE(DeviceNo9) as " + avgDevice + "9, " +
+                        "AVERAGE(DeviceNo10) as " + avgDevice + "10, " +
+                        "AVERAGE(Outside) as " + avgOutside + " " +
+                        "FROM %s " +
+                        "WHERE Date >= '%s' ORDER BY Date DESC";
+
+        String queryStatement = String.format(rawQueryStatement, table, timestampValue);
+
+        Log.v(TAG, "Query Avg statement : " + queryStatement);
+
+        // Encode the query
+        String query = URLEncoder.encode(queryStatement);
+        URL url = new URL("https://www.googleapis.com/fusiontables/v2/query?sql=" + query + "&key=" + API_KEY_GOOGLE);
+        HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("Authorization", "Bearer " + getToken());
+
+        Log.i(TAG, "Response Code: " + conn.getResponseCode());
+        Log.i(TAG, "Response Message: " + conn.getResponseMessage());
+
+        // read the response
+        BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        String inputLine;
+        StringBuffer response = new StringBuffer();
+        while ((inputLine = in.readLine()) != null) {
+            response.append(inputLine);
+        }
+        in.close();
+
+        JSONObject json = new JSONObject(response.toString());
+        Log.v(TAG, json.toString());
+        JSONArray columns = json.getJSONArray("columns");
+        JSONArray rows = json.getJSONArray("rows");
+        JSONArray values = rows.getJSONArray(0);
+
+        float avgSum = 0;
+        int avgCount = 0;
+        float countSum = 0;
+        int countCount = 0;
+
+        for (int i = 0; i < columns.length(); i++) {
+            String name = columns.getString(i);
+            if (name.startsWith(avgDevice)) {
+                avgSum += values.getDouble(i);
+                avgCount++;
+            } else if (name.startsWith(countDevice)) {
+                countSum += values.getDouble(i);
+                countCount++;
+            }
+        }
+
+        // sanity check: need at least 150 values from each device for a proper avg
+        float avgSamplesPerDevices = countSum / countCount;
+        if (avgSamplesPerDevices < 150) {
+            throw new JSONException("Not enough data to calculate average humidity since " + timestampValue + ". Got in average only " + avgSamplesPerDevices + " per device.");
+        }
+
+        float avg = avgSum / avgCount;
+
+        return avg;
+    }
+
     private String getToken() {
         AuthPreferences authPreferences = new AuthPreferences(this);
         return authPreferences.getToken();
     }
+
 
 }

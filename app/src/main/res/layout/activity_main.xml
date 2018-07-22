@@ -10,7 +10,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="20dp"
         android:gravity="center"
         android:text="Scheduler: ON"
         android:textAppearance="?android:attr/textAppearanceLarge"/>
@@ -43,7 +43,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/schedulerbuttons_container"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="20dp"
         android:gravity="center_horizontal"
         android:orientation="horizontal">
 
@@ -51,7 +51,7 @@
             android:id="@+id/last_scan_attempt_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:width="150dp"
+            android:width="180dp"
             android:text="Last scan: "/>
 
         <TextView
@@ -76,7 +76,7 @@
             android:id="@+id/last_scan_success_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:width="150dp"
+            android:width="180dp"
             android:text="Last successful scan: "/>
 
         <TextView
@@ -100,7 +100,7 @@
             android:id="@+id/last_upload_success_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:width="150dp"
+            android:width="180dp"
             android:text="Last upload: "/>
 
         <TextView
@@ -117,6 +117,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/linearLayout3"
         android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
         android:gravity="center_horizontal"
         android:orientation="horizontal">
 
@@ -124,8 +125,8 @@
             android:id="@+id/incomplete_scans_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:width="150dp"
-            android:text="Incomplete scans: "/>
+            android:width="180dp"
+            android:text="Incomplete scans in a row: "/>
 
         <TextView
             android:id="@+id/incomplete_scans"
@@ -135,14 +136,87 @@
             android:textAlignment="viewEnd"/>
     </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/linearLayout5"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/linearLayout4"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="10dp"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/incomplete_scans_alert_time_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:width="180dp"
+            android:text="Last incomplete scans alert: "/>
+
+        <TextView
+            android:id="@+id/incomplete_scans_alert_time"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:text="0"
+            android:textAlignment="viewEnd"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout6"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/linearLayout5"
+        android:layout_centerHorizontal="true"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/avg_hum_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:width="180dp"
+            android:text="Average humidity: "/>
+
+        <TextView
+            android:id="@+id/avg_hum"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textAlignment="viewEnd"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout7"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/linearLayout6"
+        android:layout_centerHorizontal="true"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/hum_threshold_alert_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:width="180dp"
+            android:text="Humidity threshold alert: "/>
+
+        <TextView
+            android:id="@+id/hum_threshold_alert"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:text="26.06.2016 18:58"
+            android:textAlignment="viewEnd"/>
+    </LinearLayout>
+
     <Button
         android:id="@+id/scan_now_button"
         style="@style/Widget.AppCompat.Button.Colored"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/linearLayout3"
+        android:layout_below="@id/linearLayout7"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="20dp"
         android:text="Scan and Upload"/>
 
     <TextView
