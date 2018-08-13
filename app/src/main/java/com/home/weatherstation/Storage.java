@@ -80,7 +80,7 @@ public class Storage {
     }
 
     public static void removeThresholdExceededHumidity(Context context) {
-        getPrefs(context).edit().remove("humidity_threshhold_exceeded_time");
+        remove(context, "humidity_threshhold_exceeded_time");
     }
 
     public static long readThresholdExceededHumidity(Context context) {
@@ -97,6 +97,13 @@ public class Storage {
 
     private static float readFloat(Context context, String key) {
         return getPrefs(context).getFloat(key, -1);
+    }
+
+    @SuppressLint("CommitPrefEdits")
+    private static void remove(Context context, String key) {
+        SharedPreferences.Editor editor = getPrefs(context).edit();
+        editor.remove(key);
+        editor.commit();
     }
 
     @SuppressLint("CommitPrefEdits")

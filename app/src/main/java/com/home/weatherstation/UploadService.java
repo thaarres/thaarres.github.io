@@ -277,40 +277,39 @@ public class UploadService extends IntentService {
                 Storage.storeThresholdExceededHumidity(this, System.currentTimeMillis());
                 sendThresholdExceededAlert("Humidity", average, lastXdays, LOWER_THRESHOLD_HUMIDITY, UPPER_THRESHOLD_HUMIDITY);
             } else {
+                if (Storage.readThresholdExceededHumidity(this) > -1) {
+                    sendThresholdRecoveredAlert("Humidity", average, lastXdays, LOWER_THRESHOLD_HUMIDITY, UPPER_THRESHOLD_HUMIDITY);
+                }
                 Storage.removeThresholdExceededHumidity(this);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
+        } catch (IOException | JSONException e) {
             e.printStackTrace();
         }
     }
 
+    private void sendThresholdRecoveredAlert(String tableName, double recoveringValue, int lastXdays, float lowerThreshold, float upperThreshold) {
+        Log.i(TAG, "Sending Threshold Recovered alert email...");
+        String subject = String.format("%s Alert: %s threshold recovered", getString(R.string.app_name), tableName);
+        sendAlertEmail(recoveringValue, lastXdays, lowerThreshold, upperThreshold, subject);
+    }
+
     private void sendThresholdExceededAlert(String tableName, double exceedingValue, int lastXdays, float lowerThreshold, float upperThreshold) {
         Log.i(TAG, "Sending Threshold Exceeded alert email...");
+        String subject = String.format("%s Alert: %s threshold exceeded", getString(R.string.app_name), tableName);
+        sendAlertEmail(exceedingValue, lastXdays, lowerThreshold, upperThreshold, subject);
+    }
+
+    private void sendAlertEmail(double exceedingValue, int lastXdays, float lowerThreshold, float upperThreshold, String subject) {
         BackgroundMail.newBuilder(this)
                 .withUsername(BuildConfig.ALERT_EMAIL_FROM)
                 .withPassword(BuildConfig.ALERT_EMAIL_PASSWORD)
                 .withMailto(BuildConfig.ALERT_EMAIL_TO)
                 .withType(BackgroundMail.TYPE_PLAIN)
-                .withSubject(String.format("%s Alert: %s threshold exceeded", getString(R.string.app_name), tableName))
+                .withSubject(subject)
                 .withBody(String.format("Measured avg. for the last %d days = %s \n" +
                         "Lower threshold = %s\n" +
                         "Upper threshold = %s", lastXdays, new DecimalFormat("#.##").format(exceedingValue), new DecimalFormat("#.##").format(lowerThreshold), new DecimalFormat("#.##").format(upperThreshold)))
                 .withProcessVisibility(false)
-                // callback doesn't work with this IntentService
-//                .withOnSuccessCallback(new BackgroundMail.OnSuccessCallback() {
-//                    @Override
-//                    public void onSuccess() {
-//                        Log.i(TAG, "Successfully sent Threshold Exceeded Alert Email");
-//                    }
-//                })
-//                .withOnFailCallback(new BackgroundMail.OnFailCallback() {
-//                    @Override
-//                    public void onFail() {
-//                        Crashlytics.logException(new Exception("Failed to send Threshold Exceeded Alert Email"));
-//                    }
-//                })
                 .send();
     }
 
