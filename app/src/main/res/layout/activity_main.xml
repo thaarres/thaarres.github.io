@@ -171,18 +171,12 @@
         android:orientation="horizontal">
 
         <TextView
-            android:id="@+id/avg_hum_label"
+            android:id="@+id/humidity_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:width="180dp"
-            android:text="Average humidity: "/>
-
-        <TextView
-            android:id="@+id/avg_hum"
-            android:layout_width="120dp"
-            android:layout_height="wrap_content"
-            android:text=""
-            android:textAlignment="viewEnd"/>
+            android:width="300dp"
+            android:text="Humidity Alert Config"
+            android:textStyle="bold"/>
     </LinearLayout>
 
     <LinearLayout
@@ -195,11 +189,67 @@
         android:orientation="horizontal">
 
         <TextView
+            android:id="@+id/hum_threshold_config_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:width="180dp"
+            android:text="Threshold config: "/>
+
+        <TextView
+            android:id="@+id/hum_threshold_config"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:text="[48%, 60%]"
+            android:textAlignment="viewEnd"/>
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/edit_hum_threshold_config"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/linearLayout7"
+        android:layout_alignEnd="@id/linearLayout7"
+        android:background="@drawable/ic_pencil_white_18dp"/>
+
+    <LinearLayout
+        android:id="@+id/linearLayout8"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/linearLayout7"
+        android:layout_centerHorizontal="true"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/avg_hum_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:width="180dp"
+            android:text="Current 4d average: "/>
+
+        <TextView
+            android:id="@+id/avg_hum"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textAlignment="viewEnd"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout9"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/linearLayout8"
+        android:layout_centerHorizontal="true"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal">
+
+        <TextView
             android:id="@+id/hum_threshold_alert_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:width="180dp"
-            android:text="Humidity threshold alert: "/>
+            android:text="Active threshold alert: "/>
 
         <TextView
             android:id="@+id/hum_threshold_alert"
@@ -214,7 +264,7 @@
         style="@style/Widget.AppCompat.Button.Colored"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/linearLayout7"
+        android:layout_below="@id/linearLayout9"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
         android:text="Scan and Upload"/>

@@ -54,7 +54,6 @@ public class ScannerService extends Service {
 
     private static final long MAX_INOMPLETE_SAMPLING_ATTEMPTS = 3;
 
-
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothLeScanner mLEScanner;
     private ScanSettings settings;
@@ -287,7 +286,7 @@ public class ScannerService extends Service {
             Storage.storeLastSuccessfulScanTime(getBaseContext(), now);
             Storage.storeIncompleteScans(getBaseContext(), 0); // reset
             upload();
-            UploadService.checkThresholds(this); // could be done only once a day instead of for every scan cycle
+            UploadService.checkThresholds(this, Storage.readAlertingConfig(this)); // could be done only once a day instead of for every scan cycle
         } else {
             handleIncompleteScan();
 

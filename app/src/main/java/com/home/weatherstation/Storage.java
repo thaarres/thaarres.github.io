@@ -66,6 +66,22 @@ public class Storage {
         write(context, "last_upload_time", timestamp);
     }
 
+    public static void storeAlertingConfig(Context context, AlertingConfig alertingConfig) {
+        writeFloat(context, "config_humidity_lower_threshold", alertingConfig.getLowerThresholdHumidity());
+        writeFloat(context, "config_humidity_upper_threshold", alertingConfig.getUpperThresholdHumidity());
+    }
+
+    public static AlertingConfig readAlertingConfig(Context context) {
+        AlertingConfig alertingConfig = new AlertingConfig(); // Default values
+        if (contains(context, "config_humidity_lower_threshold")) {
+            alertingConfig.setLowerThresholdHumidity(readFloat(context, "config_humidity_lower_threshold"));
+        }
+        if (contains(context, "config_humidity_upper_threshold")) {
+            alertingConfig.setUpperThresholdHumidity(readFloat(context, "config_humidity_upper_threshold"));
+        }
+        return alertingConfig;
+    }
+
     public static void storeAverageHumidity(Context context, float avg) {
         writeFloat(context, "avg_humidity", avg);
     }
@@ -118,6 +134,10 @@ public class Storage {
         SharedPreferences.Editor editor = getPrefs(context).edit();
         editor.putFloat(key, value);
         editor.commit();
+    }
+
+    private static boolean contains(Context context, String key) {
+        return getPrefs(context).contains(key);
     }
 
 }

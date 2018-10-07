@@ -45,6 +45,7 @@ public class UploadService extends IntentService {
     private static final String EXTRA_SAMPLE_DEVICE8 = "com.home.weatherstation.extra.sampledevice8";
     private static final String EXTRA_SAMPLE_DEVICE9 = "com.home.weatherstation.extra.sampledevice9";
     private static final String EXTRA_SAMPLE_DEVICE10 = "com.home.weatherstation.extra.sampledevice10";
+    private static final String EXTRA_ALERTING_CONFIG = "com.home.weatherstation.extra.config";
 
     private static final String TEMPERATURE_TABLE_ID = "1jQ_Jnnw26pWU05sGBNdXbXlvxB-66_W4fuJgsTG7";
     private static final String HUMIDITY_TABLE_ID = "1sJHjpA2ToIvRbY0eksYhS1hfctq8yg-1H1KPhvaJ";
@@ -55,9 +56,6 @@ public class UploadService extends IntentService {
     private static final String WUNDERGROUND_STATION_URL = "https://api.wunderground.com/api/" + API_KEY_WUNDERGROUND + "/conditions/q/ch/zuerich-kreis-4-hard/zmw:00000.71.06660.json";
     private static final String SMN_STATION_URL = "https://opendata.netcetera.com/smn/smn/REH";
 
-    private static final float UPPER_THRESHOLD_HUMIDITY = 60.0f;
-    private static final float LOWER_THRESHOLD_HUMIDITY = 43.0f;
-
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.0");
 
     public UploadService() {
@@ -67,9 +65,10 @@ public class UploadService extends IntentService {
     /**
      * Sends an alert if the average value for the last 7 days is below or above the thresholds.
      */
-    public static void checkThresholds(final Context context) {
+    public static void checkThresholds(final Context context, final AlertingConfig config) {
         Intent intent = new Intent(context, UploadService.class);
         intent.setAction(ACTION_CHECK_THRESHOLDS);
+        intent.putExtra(EXTRA_ALERTING_CONFIG, config);
         context.startService(intent);
     }
 
@@ -117,7 +116,7 @@ public class UploadService extends IntentService {
                 Log.i(TAG, "" + sampleOutside);
                 upload(timestamp, sampleDevice8, sampleDevice9, sampleDevice10, sampleOutside);
             } else if (ACTION_CHECK_THRESHOLDS.equals(action)) {
-                checkThresholds();
+                checkThresholds((AlertingConfig) intent.getSerializableExtra(EXTRA_ALERTING_CONFIG));
             } else {
                 Log.w(TAG, "Unknown action: " + action);
             }
@@ -266,19 +265,19 @@ public class UploadService extends IntentService {
         Log.v(TAG, response);
     }
 
-    private void checkThresholds() {
+    private void checkThresholds(final AlertingConfig alertingConfig) {
         int lastXdays = -4;
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DAY_OF_YEAR, lastXdays);
         try {
             float average = queryAvgSince(HUMIDITY_TABLE_ID, cal.getTime());
             Storage.storeAverageHumidity(this, average);
-            if (average < LOWER_THRESHOLD_HUMIDITY || average > UPPER_THRESHOLD_HUMIDITY) {
+            if (average < alertingConfig.getLowerThresholdHumidity() || average > alertingConfig.getUpperThresholdHumidity()) {
                 Storage.storeThresholdExceededHumidity(this, System.currentTimeMillis());
-                sendThresholdExceededAlert("Humidity", average, lastXdays, LOWER_THRESHOLD_HUMIDITY, UPPER_THRESHOLD_HUMIDITY);
+                sendThresholdExceededAlert("Humidity", average, lastXdays, alertingConfig.getLowerThresholdHumidity(), alertingConfig.getUpperThresholdHumidity());
             } else {
                 if (Storage.readThresholdExceededHumidity(this) > -1) {
-                    sendThresholdRecoveredAlert("Humidity", average, lastXdays, LOWER_THRESHOLD_HUMIDITY, UPPER_THRESHOLD_HUMIDITY);
+                    sendThresholdRecoveredAlert("Humidity", average, lastXdays, alertingConfig.getLowerThresholdHumidity(), alertingConfig.getUpperThresholdHumidity());
                 }
                 Storage.removeThresholdExceededHumidity(this);
             }
