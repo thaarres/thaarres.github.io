@@ -47,10 +47,16 @@ public class ScannerService extends Service {
     private static final float DEVICE_NO9_TEMP_SHIFT_DEGREES = 0.1f;  // old device
     private static final float DEVICE_N10_TEMP_SHIFT_DEGREES = 0.0f;  // new device
 
-    // Relative Humidity calibration multiplier (calibrated at 23.9deg and relHum 75%)
-    private static final double DEVICE_NO8_RELHUM_CALIBRATION = 0.89d;
-    private static final double DEVICE_NO9_RELHUM_CALIBRATION = 1.04d;
-    private static final double DEVICE_N10_RELHUM_CALIBRATION = 1.01d;
+    // Relative Humidity calibration multiplier
+    // (calibrated at 23.9deg and relHum 75%)
+    //private static final double DEVICE_NO8_RELHUM_CALIBRATION = 0.89d;
+    //private static final double DEVICE_NO9_RELHUM_CALIBRATION = 1.04d;
+    //private static final double DEVICE_N10_RELHUM_CALIBRATION = 1.01d;
+    // (calibrated at 23-24deg and relHum 49-55%)
+    private static final double DEVICE_NO8_RELHUM_CALIBRATION = 0.906d;
+    private static final double DEVICE_NO9_RELHUM_CALIBRATION = 1.098d;
+    private static final double DEVICE_N10_RELHUM_CALIBRATION = 1.015d;
+
 
     private static final long MAX_INOMPLETE_SAMPLING_ATTEMPTS = 3;
 
