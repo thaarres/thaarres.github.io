@@ -1,4 +1,4 @@
-# My perosnal webpage
+# My personal webpage
 
 
 To render, go to:<br>
