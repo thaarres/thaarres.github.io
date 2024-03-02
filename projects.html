@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Available Research Projects</title>
+    <style>
+        .project { margin-bottom: 20px; }
+        .title { font-weight: bold; }
+        .description { margin-left: 20px; }
+        .level { margin-left: 20px; }
+        .contact { margin-top: 20px; font-style: italic; }
+    </style>
+</head>
+<body>
+    <h1>Open Projects</h1>
+    <p class="contact">Contact Thea Aarrestad (<a href="mailto:thea.aarrestad@cern.ch">thea.aarrestad@cern.ch</a>) for more details.</p>
+    <div class="projects">
+        <div class="project">
+            <div class="title">Physics-inspired dynamic graph neural networks embedding approximate symmetries for the CMS Experiment at CERN</div>
+            <div class="description">The project is to implement certain graph neural networks that are invariant to different symmetry groups, relevant to physics, and test them for jet tagging, which is a classification task in particle physics. The network will be analysed, and the number of FLOPS, tentative mathematical guarantees and comparison with current best models will be determined (LorentzNet, ParticleTransformer, PELICAN). Furthermore following Walters and Wang Approximately Equivariant Networks for Imperfectly Symmetric Dynamics the network equivariance is mitigated to better fit the real world data produced in the CMS detector in CERN.
+                Particle physics is an ideal playground for testing equivariant networks as the Standard Model is full of symmetries.
+                The input data can consist of the transversal momentum and two angles of a constituent particle. Therefore implementing networks is not a simple application of already existing architectures as the equivariance should exist for each input specifically and not globally on the entries.
+                Giving the network only to symmetry equivariant functions to learn should theoretically  induce better performance, it could be more understandable in terms of mathematical analysis and should be more efficient for the inference.
+                The need for low latency models in particle physics is particularly important for the selection of stored events in the CMS Experiment, therefore developing a solution for jet tagging could potentially help to construct an algorithm that would only register interesting events during a collision.
+                It is a nice illustration of the usage of approximately equivariant networks in a real case scenario.
+                </div>
+            <div class="level">Level: Master Thesis</div>
+        </div>
+        <div class="project">
+            <div class="title">Jet tagging for HL-LHC</div>
+            <div class="description">Get inspiration from the work <a href="https://arxiv.org/abs/2402.01876">here</a> and implement one of these algorithms for real data taking in CMS.
+                </div>
+            <div class="level">Level: Semester Thesis</div>
+        </div>
+        <!-- Repeat the above block for each project -->
+    </div>
+</body>
+
+<head>
+    <title>Research Projects Detail</title>
+    <style>
+        .project { margin-bottom: 20px; }
+        .title { font-weight: bold; }
+        .student { margin-left: 20px; }
+        .supervision { margin-left: 20px; }
+        .details { margin-left: 20px; }
+        a { text-decoration: none; color: blue; }
+    </style>
+</head>
+<body>
+    <h1>Previous projects</h1>
+    <div class="projects">
+        <div class="project">
+            <div class="title">Incorporating physics-motivated symmetries into Neural Networks for high-energy particle physics experiments</div>
+            <div class="student">Semester thesis of Matthias Bonvin</div>
+            <div class="supervision">Co-supervised with Günther Dissertori at ETH Zurich</div>
+            <div class="details">Status: Completed Fall 2023</div>
+        </div>
+        <div class="project">
+            <div class="title">Scouting for anomalous events with unsupervised AI in the CMS hardware trigger</div>
+            <div class="student">PhD thesis of Patrick Odagiu</div>
+            <div class="supervision">Co-supervised with Günther Dissertori at ETH Zurich</div>
+            <div class="details">Status: Ongoing</div>
+        </div>
+        <div class="project">
+            <div class="title">AXOL1TL: Real-time anomaly detection in the CMS hardware trigger</div>
+            <div class="student">Master thesis of Chang Sun</div>
+            <div class="supervision">Co-supervised with Günther Dissertori at ETH Zürich</div>
+            <div class="details">Presented at Fast Machine Learning for Science 2023, Grade: 6</div>
+        </div>
+        <div class="project">
+            <div class="title">Latency and resource-aware decision trees for faster FPGA inference at the LHC</div>
+            <div class="student">Master thesis of Andrew Oliver</div>
+            <div class="supervision">Co-supervised with M. Guillame-Bert (Google) and Prof. Dr. G. Dissertori (ETHZ)</div>
+            <div class="details">Presented at Fast Machine Learning for Science 2023, Grade: 6</div>
+        </div>
+        <div class="project">
+            <div class="title">Deep Neural Network to Identify High-Energy B Hadrons via their Hit Multiplicity Increase through Pixel Detection Layers</div>
+            <div class="student">UZH Bachelor Thesis by M. Sommerhalder</div>
+            <div class="supervision">Main supervisor: M. Sommerhalder</div>
+            <div class="details">Feb-Aug 2018, <a href="https://github.com/msommerh/bTag_HitCount">github.com/msommerh/bTag_HitCount</a></div>
+        </div>
+        <div class="project">
+            <div class="title">Explainable Anomaly Detection for New Physics searches at the LHC with PIDForest</div>
+            <div class="student">Jessica Prendi</div>
+            <div class="supervision">Co-supervised with Prof. Dr. G. Dissertori (ETHZ), Dr. S. Summers (CERN), Dr. M. Guillame-Bert and Dr. R. Stotz (Google)</div>
+            <div class="details">Sep-Nov 2023</div>
+        </div>
+        <div class="project">
+            <div class="title">Detecting long-lived particles trapped in detector material at the LHC</div>
+            <div class="student">CERN summer student project by Jasmine Simms</div>
+            <div class="supervision">Co-supervised with Juliette Alimena</div>
+            <div class="details">Published in Phys.Rev.D 105, L051701</div>
+        </div>
+        <div class="project">
+            <div class="title">Convolutional Autoencoders for Anomaly Detection in the L1 Trigger</div>
+            <div class="student">CERN Student 2020, Sierra Weyhmiller</div>
+            <div class="supervision">Co-supervisor</div>
+            <div class="details"><a href="https://indico.cern.ch/event/947570/">https://indico.cern.ch/event/947570/</a></div>
+        </div>
+    </div>
+</body>
+</html>
