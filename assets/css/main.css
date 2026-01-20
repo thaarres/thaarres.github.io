@@ -3258,3 +3258,46 @@ input[type="button"],
 #header a:hover {
   color: #fff !important;
 }
+
+/* =========================
+   LINK COLOR OVERRIDE
+   Stylish dark green
+   ========================= */
+
+/* Main link color (dark green) */
+a {
+  color: #1b5e20 !important;            /* deep, elegant green */
+  border-bottom-color: rgba(31, 111, 74, 0.45) !important;
+}
+
+/* Hover: a touch darker + cleaner underline */
+a:hover {
+  color: #1b5e20 !important;            /* darker on hover */
+  border-bottom-color: transparent !important;
+}
+
+/* Keyboard focus: accessible, subtle ring */
+a:focus-visible {
+  outline: 3px solid rgba(31, 111, 74, 0.25);
+  outline-offset: 3px;
+  border-bottom-color: transparent !important;
+}
+
+/* Visited: slightly muted so you can tell it’s been clicked */
+a:visited {
+  color: #185c3e !important;
+  border-bottom-color: rgba(24, 92, 62, 0.35) !important;
+}
+
+/* Keep footer/header areas readable as you already force white text */
+#header a,
+#footer .icons a {
+  color: rgba(255, 255, 255, 0.85) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.35) !important;
+}
+
+#header a:hover,
+#footer .icons a:hover {
+  color: #fff !important;
+  border-bottom-color: transparent !important;
+}
