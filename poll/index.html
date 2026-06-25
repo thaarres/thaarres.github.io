@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Agentic AI @ ETHZ — live poll</title>
+<style>
+  :root{
+    --bg0:#0A1B33; --bg1:#0F274A; --panel:#122F57; --panel2:#0E2647;
+    --line:#26456f; --eth:#3D7BD9; --coral:#FF6B35; --cyan:#19B8D0;
+    --ink:#EAF1FB; --sub:#9DB4D4; --muted:#6F89AE;
+    --mono:"SF Mono","JetBrains Mono","Fira Code",ui-monospace,Menlo,Consolas,monospace;
+    --sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    min-height:100vh; color:var(--ink); font-family:var(--sans);
+    background:radial-gradient(1200px 700px at 80% -10%, #16386b 0%, var(--bg1) 45%, var(--bg0) 100%);
+    background-attachment:fixed;
+  }
+  .bgsvg{position:fixed; inset:0; opacity:.18; pointer-events:none; z-index:0}
+  .wrap{position:relative; z-index:1; max-width:760px; margin:0 auto; padding:34px 20px 90px}
+  .eyebrow{font:600 11px/1.4 var(--mono); letter-spacing:2.5px; text-transform:uppercase; color:var(--cyan)}
+  h1{font:800 clamp(28px,5vw,40px)/1.05 var(--sans); letter-spacing:-.5px; margin:10px 0 8px}
+  h1 .y{color:var(--coral)}
+  .lede{font:400 16px/1.5 var(--sans); color:var(--sub); margin:0; max-width:600px}
+  nav{display:flex; gap:8px; margin-top:18px}
+  .tab{font:600 13px/1 var(--mono); letter-spacing:.4px; padding:9px 14px; border-radius:9px; cursor:pointer;
+       color:var(--ink); background:transparent; border:1.5px solid var(--line)}
+  .tab:hover{background:rgba(255,255,255,.06)}
+  .tab.on{color:var(--bg0); background:var(--cyan); border-color:var(--cyan)}
+  section.card{padding:18px 20px; border-radius:16px; background:var(--panel); border:1px solid var(--line); margin-bottom:14px}
+  .qhead{display:flex; gap:10px; align-items:baseline; margin-bottom:13px}
+  .qnum{font:700 13px/1 var(--mono); color:var(--coral)}
+  .qtitle{font:700 16.5px/1.35 var(--sans); margin:0; flex:1}
+  .meta{font:500 12px/1 var(--mono); color:var(--muted)}
+  .opts{display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:9px}
+  .opt{display:flex; align-items:center; gap:8px; text-align:left; padding:11px 14px; border-radius:11px; cursor:pointer;
+       font:500 15px/1.25 var(--sans); color:var(--ink); background:rgba(255,255,255,.03); border:1.5px solid var(--line);
+       transition:transform .12s ease, background .15s ease, border-color .15s ease}
+  .opt:hover{transform:translateY(-1px); border-color:var(--eth)}
+  .opt.on{color:#fff; background:var(--coral); border-color:var(--coral)}
+  .box{width:17px; height:17px; flex:0 0 17px; border-radius:9px; border:2px solid var(--muted);
+       display:grid; place-items:center}
+  .opt.multi .box{border-radius:5px}
+  .opt.on .box{border-color:#fff; background:#fff}
+  .box i{font:900 11px/1 var(--sans); color:var(--coral); font-style:normal; display:none}
+  .opt.on .box i{display:block}
+  .scale{display:flex; gap:9px}
+  .sb{flex:1; padding:14px 0; border-radius:11px; cursor:pointer; font:800 18px/1 var(--mono); text-align:center;
+      color:var(--ink); background:rgba(255,255,255,.03); border:1.5px solid var(--line);
+      transition:transform .12s ease, background .15s ease, border-color .15s ease}
+  .sb:hover{transform:translateY(-1px); border-color:var(--eth)}
+  .sb.on{color:#fff; background:var(--coral); border-color:var(--coral)}
+  .ends{display:flex; justify-content:space-between; margin-top:7px; font:500 12px/1 var(--mono); color:var(--muted)}
+  textarea{width:100%; resize:vertical; padding:12px 14px; border-radius:11px; font:400 15px/1.5 var(--sans);
+           color:var(--ink); background:rgba(255,255,255,.03); border:1.5px solid var(--line)}
+  textarea:focus, .opt:focus-visible, .sb:focus-visible, .tab:focus-visible, .cta:focus-visible{outline:2px solid var(--cyan); outline-offset:2px}
+  textarea::placeholder{color:var(--muted)}
+  .submitbar{position:sticky; bottom:14px; margin-top:18px; display:flex; align-items:center; gap:14px;
+             padding:12px 14px; border-radius:14px; background:rgba(10,27,51,.86); backdrop-filter:blur(8px); border:1px solid var(--line)}
+  .prog{flex:1; min-width:0}
+  .track{height:7px; border-radius:5px; background:rgba(255,255,255,.08); overflow:hidden}
+  .track > i{display:block; height:100%; width:0; background:var(--cyan); transition:width .4s ease}
+  .progtxt{margin-top:5px; font:600 12px/1 var(--mono); color:var(--sub)}
+  .cta{font:800 15px/1 var(--sans); padding:13px 24px; border-radius:11px; white-space:nowrap; cursor:pointer;
+       color:var(--bg0); background:var(--coral); border:none; transition:transform .12s ease, filter .12s ease}
+  .cta:hover{filter:brightness(1.06); transform:translateY(-1px)}
+  .cta[disabled]{cursor:not-allowed; opacity:.7; background:var(--line)}
+  .foot{margin-top:14px; font:400 12.5px/1.5 var(--mono); color:var(--muted); text-align:center}
+  .err{margin-top:14px; color:var(--coral); font:500 14px/1.4 var(--sans)}
+  .banner{margin:0 0 14px; padding:11px 14px; border-radius:11px; background:#3a2a12; border:1px solid #7a5a1f;
+          color:#ffd9a8; font:500 13.5px/1.5 var(--sans)}
+  /* results */
+  .rtop{display:flex; align-items:center; justify-content:space-between; gap:12px; margin:6px 0 18px}
+  .count{font:800 40px/1 var(--mono); color:var(--coral)}
+  .countlbl{font:500 14px/1 var(--sans); color:var(--sub)}
+  .bar{margin-bottom:10px}
+  .barrow{display:flex; justify-content:space-between; margin-bottom:4px}
+  .barlbl{font:500 13.5px/1.3 var(--sans); color:var(--ink)}
+  .barval{font:600 12.5px/1 var(--mono); color:var(--sub)}
+  .bartrack{height:9px; border-radius:6px; background:rgba(255,255,255,.06); overflow:hidden}
+  .bartrack > i{display:block; height:100%; width:0; border-radius:6px; transition:width .6s cubic-bezier(.2,.7,.2,1)}
+  .wish{padding:11px 14px; border-radius:10px; background:rgba(255,255,255,.03); border:1px solid var(--line); margin-top:8px}
+  .wish .t{font:400 14.5px/1.5 var(--sans); color:var(--ink)}
+  .wish .r{margin-left:8px; font:600 11px/1 var(--mono); color:var(--cyan)}
+  .empty{padding:30px 24px; border-radius:16px; background:var(--panel); border:1px dashed var(--line); color:var(--sub); font:400 15px/1.5 var(--sans)}
+  .center{display:grid; place-items:center; text-align:center}
+  .done{margin-top:30px; padding:34px 26px; border-radius:18px; background:var(--panel); border:1px solid var(--line); text-align:center}
+  .tick{width:64px; height:64px; border-radius:32px; margin:0 auto 16px; background:var(--coral); display:grid; place-items:center; font:900 30px/1 var(--sans); color:#fff}
+  @media (prefers-reduced-motion: reduce){*{transition:none !important; animation:none !important}}
+</style>
+</head>
+<body>
+<svg class="bgsvg" width="100%" height="100%" preserveAspectRatio="none">
+  <g stroke="#3D7BD9" stroke-width="1" fill="none">
+    <path d="M-20 90 Q 300 40 680 130 T 1500 60" />
+    <path d="M-20 320 Q 360 420 760 300 T 1500 380" opacity="0.6" />
+  </g>
+  <circle cx="140" cy="95" r="6" fill="#FF6B35"/>
+  <circle cx="680" cy="130" r="4" fill="#19B8D0"/>
+  <circle cx="1080" cy="92" r="6" fill="#3D7BD9"/>
+  <circle cx="330" cy="360" r="4" fill="#19B8D0"/>
+  <circle cx="760" cy="300" r="6" fill="#FF6B35"/>
+  <circle cx="1180" cy="350" r="4" fill="#3D7BD9"/>
+</svg>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">AGENTIC AI · ETHZ MINI-WORKSHOP · 25 JUN 2026</div>
+    <h1>How do <span class="y">you</span> work with agents?</h1>
+    <p class="lede">Two minutes, anonymous. Tell us how you actually use agentic AI in research — and what you'd like ETH to give you. Results update live in the room.</p>
+    <nav>
+      <button class="tab on" data-view="survey">Take the survey</button>
+      <button class="tab" data-view="results">Live results</button>
+    </nav>
+  </header>
+  <div id="banner"></div>
+  <main id="root"></main>
+</div>
+
+<script>
+/* ============================================================
+   CONFIG — paste your Supabase values here (see setup notes)
+   ============================================================ */
+const SUPABASE_URL = "https://dxftjnqtophtuludxpph.supabase.co";   // your project URL
+const SUPABASE_KEY = "sb_publishable_f1MpExJDfOsOCAiD_ksqUg_iNq4IKzx";   // publishable key (public by design)
+const TABLE = "responses";
+
+const CONFIGURED = !SUPABASE_URL.startsWith("YOUR_") && !SUPABASE_KEY.startsWith("YOUR_");
+const REST = () => SUPABASE_URL.replace(/\/$/, "") + "/rest/v1/" + TABLE;
+// New publishable keys must NOT be sent as a Bearer token; legacy anon JWTs can. Handle both:
+function authHeaders(extra){
+  const h = Object.assign({ apikey: SUPABASE_KEY }, extra || {});
+  if (SUPABASE_KEY.indexOf("eyJ") === 0) h["Authorization"] = "Bearer " + SUPABASE_KEY;
+  return h;
+}
+
+/* ---------- questions ---------- */
+const QUESTIONS = [
+  { id:"role", type:"single", q:"Where do you sit?",
+    opts:["Undergrad","Master's","PhD student","Postdoc","Professor / PI","Research staff","Other"] },
+  { id:"freq", type:"single", q:"How often do you use AI / agentic tools in your research?",
+    opts:["Never","Tried it once or twice","Monthly","Weekly","Daily","It's core to how I work"] },
+  { id:"tools", type:"multi", q:"Which tools do you actually use?", hint:"Pick any",
+    opts:["Claude / Claude Code","ChatGPT / Codex","Gemini","GitHub Copilot","Cursor","Local / open models","None yet"] },
+  { id:"uses", type:"multi", q:"What do you use agents for today?", hint:"Pick any",
+    opts:["Writing & debugging code","Literature review","Data analysis","Statistics & fitting","Writing & docs","Making plots","Learning new methods","Not using agents yet"] },
+  { id:"blocker", type:"single", q:"Biggest blocker to using them more?",
+    opts:["Cost / access","Don't know how to start","Trust & reproducibility","Data privacy","No time to learn","My work doesn't need it","Other"] },
+  { id:"help", type:"scale", q:"If ETH provided frontier-model access centrally, how much would it help your work?",
+    opts:["1","2","3","4","5"], ends:["Not at all","Game-changing"] },
+  { id:"provide", type:"multi", q:"What would you most like ETH to provide?", hint:"Pick up to a few",
+    opts:["Funded model access","Training & workshops","Shared agent templates","Compute integration","Reproducibility & ethics guidelines","A community / forum"] },
+  { id:"wish", type:"text", q:"The one workflow you wish an agent could fully handle:",
+    placeholder:"e.g. take a dataset and a question, return a validated, plotted result…" },
+  { id:"ask", type:"text", optional:true, q:"Anything you'd like from today's workshop?",
+    placeholder:"Optional — topics, demos, questions for the panel…" },
+];
+const REQUIRED = QUESTIONS.filter(q => !q.optional && q.type !== "text").map(q => q.id);
+const PALETTE = ["#FF6B35","#19B8D0","#3D7BD9","#F2A65A","#6FCF97","#B388FF","#56CCF2"];
+
+/* ---------- state ---------- */
+let view = "survey";
+const answers = {};
+let mem = [];           // in-memory fallback if not configured
+let rows = [];          // loaded responses for results
+let loading = false;
+let submitting = false;
+let errMsg = "";
+
+const root = document.getElementById("root");
+const banner = document.getElementById("banner");
+const tabs = Array.from(document.querySelectorAll(".tab"));
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ---------- backend ---------- */
+async function saveResponse(a){
+  if(!CONFIGURED){ mem.push({...a, _t:Date.now()}); return true; }
+  try{
+    const res = await fetch(REST(), {
+      method:"POST",
+      headers: authHeaders({ "Content-Type":"application/json", Prefer:"return=minimal" }),
+      body: JSON.stringify({ answers: a }),
+    });
+    return res.ok;
+  }catch(e){ console.error(e); return false; }
+}
+async function loadResponses(){
+  if(!CONFIGURED) return mem.slice();
+  try{
+    const res = await fetch(REST()+"?select=answers,created_at&order=created_at.desc&limit=2000", {
+      headers: authHeaders(),
+    });
+    if(!res.ok) return [];
+    const data = await res.json();
+    return data.map(d => ({ ...(d.answers||{}), _t: Date.parse(d.created_at)||0 }));
+  }catch(e){ console.error(e); return []; }
+}
+
+/* ---------- helpers ---------- */
+function answeredCount(){
+  return REQUIRED.filter(id => { const v = answers[id]; return Array.isArray(v) ? v.length>0 : (v!=null && v!==""); }).length;
+}
+function tally(id){
+  const c = {};
+  rows.forEach(r => { const v = r[id];
+    if(Array.isArray(v)) v.forEach(x => c[x]=(c[x]||0)+1);
+    else if(v!=null && v!=="") c[v]=(c[v]||0)+1; });
+  return c;
+}
+function texts(id){
+  return rows.map(r => ({t:r[id], role:r.role, when:r._t}))
+             .filter(x => x.t && String(x.t).trim())
+             .sort((a,b)=>(b.when||0)-(a.when||0));
+}
+
+/* ---------- renders ---------- */
+function setTabs(){ tabs.forEach(t => t.classList.toggle("on", t.dataset.view === (view==="done"?"survey":view))); }
+
+function renderSurvey(){
+  setTabs();
+  let html = '<div>';
+  QUESTIONS.forEach((q, idx) => {
+    const v = answers[q.id];
+    html += '<section class="card"><div class="qhead"><span class="qnum">'+String(idx+1).padStart(2,"0")+'</span>'+
+            '<h3 class="qtitle">'+esc(q.q)+
+            (q.optional?' <span class="meta">· optional</span>':'')+
+            (q.hint?' <span class="meta">· '+esc(q.hint)+'</span>':'')+'</h3></div>';
+    if(q.type==="single"||q.type==="multi"){
+      html += '<div class="opts">';
+      q.opts.forEach(o => {
+        const on = q.type==="multi" ? (Array.isArray(v)&&v.includes(o)) : v===o;
+        html += '<button class="opt '+(q.type==="multi"?"multi ":"")+(on?"on":"")+'" data-q="'+q.id+'" data-o="'+esc(o)+'" data-type="'+q.type+'">'+
+                '<span class="box"><i>'+(q.type==="multi"?"✓":"●")+'</i></span>'+esc(o)+'</button>';
+      });
+      html += '</div>';
+    } else if(q.type==="scale"){
+      html += '<div class="scale">';
+      q.opts.forEach(o => { html += '<button class="sb '+(v===o?"on":"")+'" data-q="'+q.id+'" data-o="'+o+'" data-type="single">'+o+'</button>'; });
+      html += '</div><div class="ends"><span>'+esc(q.ends[0])+'</span><span>'+esc(q.ends[1])+'</span></div>';
+    } else {
+      html += '<textarea rows="3" data-q="'+q.id+'" placeholder="'+esc(q.placeholder||"")+'">'+esc(v||"")+'</textarea>';
+    }
+    html += '</section>';
+  });
+  html += '</div>';
+  const ac = answeredCount();
+  html += (errMsg?'<div class="err">'+esc(errMsg)+'</div>':'');
+  html += '<div class="submitbar"><div class="prog"><div class="track"><i style="width:'+((ac/REQUIRED.length)*100)+'%"></i></div>'+
+          '<div class="progtxt">'+ac+' / '+REQUIRED.length+' answered</div></div>'+
+          '<button class="cta" id="submit" '+((ac>=1 && !submitting)?"":"disabled")+'>'+(submitting?"Sending…":"Submit response")+'</button></div>';
+  html += '<p class="foot">Anonymous · responses are shared live with everyone viewing this page</p>';
+  root.innerHTML = html;
+
+  root.querySelectorAll(".opt, .sb").forEach(b => b.addEventListener("click", () => {
+    const id=b.dataset.q, o=b.dataset.o, type=b.dataset.type;
+    if(type==="multi"){ const cur=Array.isArray(answers[id])?answers[id]:[]; answers[id]=cur.includes(o)?cur.filter(x=>x!==o):[...cur,o]; }
+    else { answers[id]= answers[id]===o ? undefined : o; }
+    renderSurvey();
+  }));
+  root.querySelectorAll("textarea").forEach(t => t.addEventListener("input", e => { answers[e.target.dataset.q]=e.target.value; updateProgress(); }));
+  const sub = document.getElementById("submit");
+  if(sub) sub.addEventListener("click", submit);
+}
+function updateProgress(){
+  const ac=answeredCount(); const fill=root.querySelector(".track > i"); const txt=root.querySelector(".progtxt"); const sub=document.getElementById("submit");
+  if(fill) fill.style.width=((ac/REQUIRED.length)*100)+"%";
+  if(txt) txt.textContent=ac+" / "+REQUIRED.length+" answered";
+  if(sub) sub.disabled=!(ac>=1 && !submitting);
+}
+
+async function submit(){
+  submitting=true; errMsg=""; renderSurvey();
+  const ok = await saveResponse(answers);
+  submitting=false;
+  if(ok){ view="done"; window.scrollTo({top:0,behavior:"smooth"}); render(); }
+  else { errMsg="Couldn't save your response. Check your connection and try again."; renderSurvey(); }
+}
+
+function renderDone(){
+  setTabs();
+  root.innerHTML =
+    '<div class="done"><div class="tick">✓</div>'+
+    '<h2 style="font:800 26px/1.1 var(--sans); margin:0 0 8px">Logged. Thank you.</h2>'+
+    '<p style="color:var(--sub); font:400 15px/1.5 var(--sans); margin:0 0 22px">Your answers just went into the live tally. Curious how the room compares?</p>'+
+    '<button class="cta" id="toResults" style="background:var(--cyan)">See live results →</button></div>';
+  document.getElementById("toResults").addEventListener("click", ()=>{ view="results"; render(); });
+}
+
+async function renderResults(){
+  setTabs();
+  loading=true;
+  root.innerHTML = '<div class="rtop"><div style="display:flex;align-items:baseline;gap:10px"><span class="count">…</span>'+
+    '<span class="countlbl">loading responses</span></div></div>';
+  rows = await loadResponses();
+  loading=false;
+  const n = rows.length;
+  let html = '<div class="rtop"><div style="display:flex;align-items:baseline;gap:10px">'+
+    '<span class="count">'+n+'</span><span class="countlbl">response'+(n===1?"":"s")+' so far</span></div>'+
+    '<button class="tab" id="refresh">↻ Refresh</button></div>';
+
+  if(!CONFIGURED){
+    html += '<div class="banner" style="margin-bottom:14px">Preview mode — backend not configured, so results are only from this browser. Add your Supabase keys to go live.</div>';
+  }
+  if(n===0){
+    html += '<div class="empty">No responses yet. Be the first — open <b style="color:var(--ink)">Take the survey</b>, or share this page with the room and watch the bars fill in.</div>';
+  } else {
+    QUESTIONS.filter(q=>q.type!=="text").forEach(q => {
+      const counts = tally(q.id);
+      const ordered = q.opts.map(o => [o, counts[o]||0]);
+      const denom = q.type==="multi" ? n : ordered.reduce((s,[,c])=>s+c,0);
+      html += '<section class="card"><h3 class="qtitle" style="margin:0 0 14px">'+esc(q.q)+
+              (q.type==="multi"?' <span class="meta">· multi-select</span>':'')+'</h3>';
+      ordered.forEach(([o,c],i) => {
+        let label = esc(o);
+        if(q.ends && (i===0)) label += ' — '+esc(q.ends[0]);
+        if(q.ends && (i===q.opts.length-1)) label += ' — '+esc(q.ends[1]);
+        const pct = denom ? Math.round((c/denom)*100) : 0;
+        html += '<div class="bar"><div class="barrow"><span class="barlbl">'+label+'</span>'+
+                '<span class="barval">'+c+' · '+pct+'%</span></div>'+
+                '<div class="bartrack"><i style="width:'+pct+'%; background:'+PALETTE[i%PALETTE.length]+'"></i></div></div>';
+      });
+      html += '</section>';
+    });
+    QUESTIONS.filter(q=>q.type==="text").forEach(q => {
+      const list = texts(q.id);
+      if(!list.length) return;
+      html += '<section class="card" style="background:var(--panel2)"><h3 class="qtitle" style="margin:0 0 4px">'+esc(q.q)+'</h3>'+
+              '<div class="eyebrow" style="color:var(--muted)">'+list.length+' wish'+(list.length===1?"":"es")+'</div><div style="margin-top:12px">';
+      list.slice(0,80).forEach(x => {
+        html += '<div class="wish"><span class="t">“'+esc(x.t)+'”</span>'+(x.role?'<span class="r">— '+esc(x.role)+'</span>':'')+'</div>';
+      });
+      html += '</div></section>';
+    });
+  }
+  root.innerHTML = html;
+  const rb=document.getElementById("refresh"); if(rb) rb.addEventListener("click", ()=>render());
+}
+
+function render(){
+  if(view==="survey") renderSurvey();
+  else if(view==="done") renderDone();
+  else renderResults();
+}
+
+tabs.forEach(t => t.addEventListener("click", ()=>{ view=t.dataset.view; render(); }));
+if(!CONFIGURED){
+  banner.innerHTML = '<div class="banner">⚙️ Backend not set yet — open this file and paste your Supabase URL + key into the CONFIG block at the top of the &lt;script&gt;. Until then it runs in local preview mode.</div>';
+}
+render();
+</script>
+</body>
+</html>
