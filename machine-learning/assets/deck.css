@@ -1,0 +1,186 @@
+/* ==========================================================================
+   Shared slide-deck engine styles — Machine Learning course
+   Used by every chapter under /machine-learning/chapters/*/
+   Edit colors/fonts here and every chapter updates at once.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root{
+  --bg:        #0a0a0d;
+  --paper:     #f6f1e7;
+  --paper-dark:#111014;
+  --ink:       #1c1b18;
+  --ink-dark:  #eceae4;
+  --ink-soft:  #6b6559;
+  --ink-soft-dark:#9a978f;
+  --line:      rgba(28,27,24,.12);
+  --line-dark: rgba(255,255,255,.12);
+  --accent:    #8a6d3b;
+
+  --serif: 'EB Garamond', Georgia, serif;
+  --sans:  'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --mono:  'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+}
+
+*{ box-sizing:border-box; }
+html,body{ margin:0; height:100%; }
+body{
+  background:var(--bg);
+  overflow:hidden;
+  font-family:var(--sans);
+}
+
+.stage{
+  position:fixed; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  padding: clamp(12px, 3vw, 40px);
+}
+
+.slide-frame{
+  position:relative;
+  width:min(1280px, 94vw);
+  aspect-ratio:16/9;
+  max-height:94vh;
+  background:var(--paper);
+  color:var(--ink);
+  box-shadow: 0 40px 120px rgba(0,0,0,.55), 0 2px 0 rgba(0,0,0,.4);
+  overflow:hidden;
+  cursor:pointer;
+  user-select:none;
+}
+
+.slide-frame.dark{
+  background:var(--paper-dark);
+  color:var(--ink-dark);
+}
+
+/* header row: breadcrumb (left) + slide counter (right) */
+.slide-header{
+  position:absolute; top:0; left:0; right:0;
+  display:flex; align-items:flex-start; justify-content:space-between;
+  padding: clamp(20px,3vw,44px) clamp(24px,4vw,56px) 0;
+  z-index:2;
+}
+.crumb{
+  font-family:var(--serif); font-style:italic;
+  font-size:clamp(12px,1.2vw,17px);
+  color:var(--ink-soft);
+  text-decoration:none;
+}
+.slide-frame.dark .crumb{ color:var(--ink-soft-dark); }
+.crumb:hover{ color:var(--accent); }
+
+.counter-wrap{ text-align:right; }
+.counter{
+  font-family:var(--mono); font-size:clamp(16px,1.8vw,26px);
+  line-height:1; color:var(--ink);
+}
+.slide-frame.dark .counter{ color:var(--ink-dark); }
+.counter-label{
+  font-family:var(--mono); font-size:9px; letter-spacing:.22em;
+  text-transform:uppercase; color:var(--ink-soft); margin-top:4px;
+}
+.slide-frame.dark .counter-label{ color:var(--ink-soft-dark); }
+
+/* content area */
+.slide-body{
+  position:absolute; inset:0;
+  display:flex; flex-direction:column; justify-content:center;
+  padding: clamp(28px,4.5vw,64px);
+  padding-top: clamp(84px,9vw,120px);
+  gap:1rem;
+  opacity:1; transform:translateY(0);
+  transition: opacity .22s ease, transform .22s ease;
+}
+.slide-body.switching{ opacity:0; transform:translateY(10px); }
+
+/* ---- type: title ---- */
+.type-title h1{
+  font-family:var(--serif); font-weight:500;
+  font-size:clamp(38px,6vw,84px); line-height:1.04; margin:0;
+}
+.type-title .subtitle{
+  font-family:var(--serif); font-style:italic; color:var(--ink-soft);
+  font-size:clamp(18px,2.4vw,32px); margin-top:.4rem;
+}
+.slide-frame.dark .type-title .subtitle{ color:var(--ink-soft-dark); }
+.type-title .byline{
+  margin-top:auto; font-family:var(--sans); font-size:clamp(12px,1.3vw,16px);
+  color:var(--ink-soft); display:flex; gap:.5rem; align-items:center;
+}
+.slide-frame.dark .type-title .byline{ color:var(--ink-soft-dark); }
+
+/* ---- type: section (chapter divider) ---- */
+.type-section{ display:flex; align-items:center; height:100%; }
+.type-section h2{
+  font-family:var(--serif); font-style:italic; font-weight:500;
+  font-size:clamp(30px,5vw,60px); margin:0; line-height:1.15;
+}
+.type-section .kicker{
+  font-family:var(--mono); font-size:11px; letter-spacing:.25em;
+  text-transform:uppercase; color:var(--ink-soft-dark); margin-bottom:.75rem; display:block;
+}
+
+/* ---- type: content ---- */
+.content-title{
+  font-family:var(--serif); font-size:clamp(22px,3vw,38px); margin:0 0 1.1rem;
+}
+.bullets{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.55rem; overflow:auto; }
+.bullets li{
+  font-family:var(--sans); font-size:clamp(15px,1.7vw,21px); line-height:1.4;
+  padding:.7rem 1rem; border:1px solid var(--line); border-radius:10px;
+  display:flex; gap:.7rem; align-items:baseline;
+  transition: opacity .3s ease, transform .3s ease;
+}
+.slide-frame.dark .bullets li{ border-color:var(--line-dark); }
+.bullets li .idx{ font-family:var(--mono); font-size:11px; color:var(--ink-soft); flex:none; }
+.bullets li.fragment-hidden{ opacity:0; transform:translateY(8px); }
+
+/* ---- type: code ---- */
+.type-code pre{
+  background:#1b1b20; color:#e8e6df; margin:0;
+  padding:1.1rem 1.25rem; border-radius:10px;
+  font-family:var(--mono); font-size:clamp(12px,1.35vw,16px); line-height:1.5;
+  overflow:auto; max-height:100%;
+}
+.type-code code{ font-family:inherit; }
+
+/* ---- type: quote ---- */
+.type-quote{ display:flex; flex-direction:column; justify-content:center; height:100%; }
+.type-quote blockquote{
+  font-family:var(--serif); font-style:italic; margin:0;
+  font-size:clamp(22px,3.4vw,42px); line-height:1.3;
+  border-left:3px solid var(--ink-soft); padding-left:1.2rem;
+}
+.type-quote cite{
+  display:block; margin-top:1rem; font-family:var(--mono); font-style:normal;
+  font-size:12px; color:var(--ink-soft); letter-spacing:.05em;
+}
+
+/* ---- type: image ---- */
+.type-image{ display:flex; flex-direction:column; height:100%; }
+.type-image .content-title{ margin-bottom:.75rem; }
+.type-image .img-wrap{ flex:1; min-height:0; display:flex; align-items:center; justify-content:center; }
+.type-image img{ max-width:100%; max-height:100%; object-fit:contain; border-radius:6px; }
+.type-image .caption{ font-family:var(--mono); font-size:12px; color:var(--ink-soft); margin-top:.5rem; text-align:center; }
+
+/* generic body text used inside content slides */
+.body-text{ font-family:var(--sans); font-size:clamp(15px,1.7vw,20px); line-height:1.55; max-width:60ch; }
+
+/* progress bar */
+.progress{ position:absolute; left:0; right:0; bottom:0; height:3px; background:var(--line); z-index:2; }
+.slide-frame.dark .progress{ background:var(--line-dark); }
+.progress-fill{ height:100%; background:var(--ink-soft); transition:width .25s ease; }
+
+/* nav hint */
+.nav-hint{
+  position:absolute; bottom:clamp(14px,2vw,22px); right:clamp(20px,3vw,40px);
+  font-family:var(--mono); font-size:10px; letter-spacing:.15em; color:var(--ink-soft);
+  z-index:2; pointer-events:none; opacity:.7;
+}
+.slide-frame.dark .nav-hint{ color:var(--ink-soft-dark); }
+
+@media (max-width: 640px){
+  .nav-hint{ display:none; }
+}

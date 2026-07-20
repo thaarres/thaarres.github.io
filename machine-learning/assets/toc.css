@@ -1,0 +1,91 @@
+/* Table of Contents page — /machine-learning/index.html */
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root{
+  --bg:        #0a0a0d;
+  --paper:     #f6f1e7;
+  --ink:       #1c1b18;
+  --ink-soft:  #6b6559;
+  --line:      rgba(28,27,24,.14);
+  --accent:    #8a6d3b;
+  --serif: 'EB Garamond', Georgia, serif;
+  --sans:  'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --mono:  'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+}
+
+*{ box-sizing:border-box; }
+html,body{ margin:0; min-height:100%; }
+body{
+  background:var(--bg);
+  font-family:var(--sans);
+  display:flex; align-items:center; justify-content:center;
+  padding: clamp(20px, 4vw, 60px) 16px;
+}
+
+.wrap{
+  position:relative;
+  width:min(760px, 100%);
+  background:var(--paper);
+  color:var(--ink);
+  border-radius:14px;
+  box-shadow: 0 40px 120px rgba(0,0,0,.55);
+  padding: clamp(32px,6vw,72px);
+}
+
+.back{
+  position:absolute; top:20px; right:24px;
+  font-family:var(--mono); font-size:11px; letter-spacing:.08em;
+  color:var(--ink-soft); text-decoration:none;
+}
+.back:hover{ color:var(--accent); }
+
+.course-head{ margin-bottom:2.5rem; }
+.kicker{
+  font-family:var(--mono); font-size:11px; letter-spacing:.25em;
+  text-transform:uppercase; color:var(--ink-soft);
+}
+h1{
+  font-family:var(--serif); font-weight:500;
+  font-size:clamp(40px,7vw,64px); margin:.35rem 0 0;
+  line-height:1.05;
+}
+.subtitle{
+  font-family:var(--serif); font-style:italic; color:var(--ink-soft);
+  font-size:clamp(18px,2.4vw,24px); margin:.5rem 0 0;
+}
+.byline{
+  font-family:var(--sans); font-size:14px; color:var(--ink-soft); margin:1rem 0 0;
+}
+
+.chapters{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.55rem; }
+.chapters a{
+  display:flex; align-items:center; gap:1rem;
+  text-decoration:none; color:var(--ink);
+  padding:.85rem 1.1rem; border:1px solid var(--line); border-radius:10px;
+  transition: border-color .15s ease, transform .15s ease, background .15s ease;
+}
+.chapters a:hover{
+  border-color:var(--accent);
+  background: rgba(138,109,59,.06);
+  transform: translateX(2px);
+}
+.chapters .num{
+  font-family:var(--mono); font-size:13px; color:var(--ink-soft); flex:none; width:2ch;
+}
+.chapters .title{
+  font-family:var(--serif); font-size:clamp(17px,2vw,21px); flex:1;
+}
+.chapters .arrow{
+  font-family:var(--mono); color:var(--ink-soft); opacity:0; transition:opacity .15s ease;
+}
+.chapters a:hover .arrow{ opacity:1; }
+
+.foot{
+  margin-top:2.5rem; font-family:var(--mono); font-size:11px; color:var(--ink-soft);
+  border-top:1px solid var(--line); padding-top:1rem;
+}
+.foot code{ font-family:var(--mono); }
+
+@media (max-width:480px){
+  .chapters .title{ font-size:16px; }
+}
