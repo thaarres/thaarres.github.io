@@ -122,6 +122,27 @@
             </div>`;
           break;
 
+        case "figure":
+          // Full-slide diagram. `svg` is raw, trusted SVG markup authored by us
+          // (no external image asset needed — keeps chapters self-contained).
+          html = `
+            <div class="type-figure">
+              ${s.title ? `<h3 class="content-title">${s.title}</h3>` : ""}
+              <div class="figure-wrap">${s.svg || ""}</div>
+              ${s.caption ? `<div class="caption">${s.caption}</div>` : ""}
+            </div>`;
+          break;
+
+        case "split":
+          // Text/bullets on one side, a diagram (or code) on the other.
+          // s.left / s.right: { title, text, bullets, svg, code, lang }
+          html = `
+            <div class="type-split">
+              <div class="split-text">${renderPane(s.left)}</div>
+              <div class="split-figure">${renderPane(s.right)}</div>
+            </div>`;
+          break;
+
         default:
           html = `<div class="body-text">Unknown slide type: ${s.type}</div>`;
       }
@@ -142,6 +163,18 @@
       }, 120);
 
       history.replaceState(null, "", "#" + (idx + 1));
+    }
+
+    function renderPane(p) {
+      // Small helper for `split` slides: renders one side (text/bullets/svg/code).
+      if (!p) return "";
+      if (p.svg) return p.svg;
+      let out = "";
+      if (p.title) out += `<h3 class="content-title">${p.title}</h3>`;
+      if (p.text) out += `<p class="body-text">${p.text}</p>`;
+      if (p.bullets) out += `<ol class="bullets">${p.bullets.map((b, n) => `<li><span class="idx">${String(n + 1).padStart(2, "0")}</span><span>${b}</span></li>`).join("")}</ol>`;
+      if (p.code) out += `<pre><code class="language-${p.lang || "python"}">${escapeHtml(p.code)}</code></pre>`;
+      return out;
     }
 
     function escapeHtml(str) {

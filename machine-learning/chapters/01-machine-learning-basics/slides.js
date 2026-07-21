@@ -8,7 +8,9 @@
      content  { type:"content", title, text, bullets:[...], reveal:true|false }
      code     { type:"code", title, lang, code }
      quote    { type:"quote", text, cite }
-     image    { type:"image", title, src, alt, caption }
+     image    { type:"image", title, src, alt, caption }      // external image file
+     figure   { type:"figure", title, svg:"<svg>...</svg>", caption }   // inline SVG diagram
+     split    { type:"split", left:{title,text,bullets,code,lang}, right:{svg} }  // two-column
 
    `bullets` reveal one-by-one on each right-arrow press unless
    `reveal:false` is set (then they all show at once).

@@ -165,6 +165,21 @@ body{
 .type-image img{ max-width:100%; max-height:100%; object-fit:contain; border-radius:6px; }
 .type-image .caption{ font-family:var(--mono); font-size:12px; color:var(--ink-soft); margin-top:.5rem; text-align:center; }
 
+/* ---- type: figure (full-slide inline SVG diagram) ---- */
+.type-figure{ display:flex; flex-direction:column; height:100%; }
+.type-figure .content-title{ margin-bottom:.5rem; }
+.type-figure .figure-wrap{ flex:1; min-height:0; display:flex; align-items:center; justify-content:center; }
+.type-figure .figure-wrap svg{ max-width:100%; max-height:100%; width:auto; height:auto; }
+.type-figure .caption{ font-family:var(--mono); font-size:12px; color:var(--ink-soft); margin-top:.5rem; text-align:center; }
+
+/* ---- type: split (text/bullets alongside a diagram or code) ---- */
+.type-split{ display:flex; gap:clamp(24px,4vw,56px); height:100%; align-items:center; }
+.type-split .split-text, .type-split .split-figure{ flex:1; min-width:0; }
+.type-split .split-figure{ display:flex; align-items:center; justify-content:center; height:100%; }
+.type-split .split-figure svg{ max-width:100%; max-height:100%; width:auto; height:auto; }
+.type-split .content-title{ margin-bottom:.75rem; }
+.type-split .split-text .bullets{ overflow:visible; }
+
 /* generic body text used inside content slides */
 .body-text{ font-family:var(--sans); font-size:clamp(15px,1.7vw,20px); line-height:1.55; max-width:60ch; }
 
@@ -172,6 +187,21 @@ body{
 .progress{ position:absolute; left:0; right:0; bottom:0; height:3px; background:var(--line); z-index:2; }
 .slide-frame.dark .progress{ background:var(--line-dark); }
 .progress-fill{ height:100%; background:var(--ink-soft); transition:width .25s ease; }
+
+/* ---- diagram utility classes, used by assets/diagrams.js generators ---- */
+.dg-node{ fill:var(--paper); stroke:var(--ink); stroke-width:1.5; }
+.dg-node-hl{ fill:var(--accent); stroke:var(--accent); stroke-width:1.5; }
+.dg-edge{ stroke:var(--ink); stroke-opacity:.2; stroke-width:1; }
+.dg-axis{ stroke:var(--ink); stroke-width:1.5; }
+.dg-proj{ stroke:var(--ink-soft); stroke-width:1; stroke-dasharray:3 3; }
+.dg-proj-pt{ fill:var(--ink-soft); }
+.dg-point{ fill:var(--ink); }
+.dg-centroid{ fill:none; stroke-width:2; }
+.dg-centroid-cross{ stroke:var(--ink); stroke-width:1.5; }
+.dg-label{ font-family:var(--mono); font-size:11px; fill:var(--ink-soft); }
+.dg-c1{ fill:#8a6d3b; } .dg-c1-stroke{ stroke:#8a6d3b; }
+.dg-c2{ fill:#3d6b8a; } .dg-c2-stroke{ stroke:#3d6b8a; }
+.dg-c3{ fill:#6b8a3d; } .dg-c3-stroke{ stroke:#6b8a3d; }
 
 /* nav hint */
 .nav-hint{
