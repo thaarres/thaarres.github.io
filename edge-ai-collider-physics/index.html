@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Machine Learning at the Edge of Scale and Speed — Thea Klæboe Årrestad</title>
+  <meta name="description" content="Browser-native presentation on real-time edge AI for collider physics.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="progress"></div>
+<div id="hud"><span id="counter"></span><span>← → / SPACE</span></div>
+
+<main id="deck">
+
+<section class="slide active title" data-section="OPEN">
+  <div class="eyebrow">PARTICLE PHYSICS × EDGE AI</div>
+  <h1>Machine Learning<br>at the <em>Edge</em><br>of Scale and Speed</h1>
+  <p class="byline">Thea Klæboe Årrestad · ETH Zürich</p>
+  <div class="orbit" aria-hidden="true"><i></i><i></i><b></b></div>
+</section>
+
+<section class="slide" data-section="SCALE">
+  <div class="eyebrow">THE BIG-DATA CHALLENGE</div>
+  <div class="hero-number count" data-target="40000">0</div>
+  <h2>exabytes / year</h2>
+  <p class="lead">The scale of information produced by future high-energy physics detectors if every raw interaction became something we tried to keep.</p>
+  <div class="rain" aria-hidden="true"></div>
+</section>
+
+<section class="slide" data-section="PHYSICS">
+  <div class="eyebrow">BUT DATA IS NOT THE GOAL</div>
+  <h1>We want to measure<br><em>tiny deviations</em><br>with extreme precision.</h1>
+  <div class="metric-row">
+    <div><strong>3%</strong><span>H→μμ coupling</span></div>
+    <div><strong>7%</strong><span>H→Zγ coupling</span></div>
+    <div><strong>&lt;30%</strong><span>Higgs self-coupling λ₃</span></div>
+    <div><strong>6%</strong><span>four-top production</span></div>
+  </div>
+  <aside>HL-LHC projections · ATLAS + CMS · 3 ab⁻¹ / experiment</aside>
+</section>
+
+<section class="slide physics-field" data-section="PHYSICS">
+  <div class="eyebrow">THE CONTRADICTION</div>
+  <h1>Keep <em>more</em>.<br>Measure <em>better</em>.<br>Decide <mark>faster</mark>.</h1>
+  <div class="rare-field" aria-hidden="true"></div>
+</section>
+
+<section class="slide" data-section="40 MHz">
+  <div class="eyebrow">INSIDE THE LHC</div>
+  <h1><span class="mono">2,800</span> bunches<br>per beam.</h1>
+  <p class="lead">Each bunch carries roughly a trillion protons and circulates around the machine about 11,000 times per second.</p>
+  <div class="orbit large" aria-hidden="true"><i></i><i></i><b></b></div>
+</section>
+
+<section class="slide center" data-section="40 MHz">
+  <div class="eyebrow">ONE CROSSING</div>
+  <div class="hero-number">25 ns</div>
+  <h2>= <em>40 MHz</em></h2>
+  <div class="ticker"><span></span></div>
+  <p>Before light travels eight metres, the next bunch crossing has arrived.</p>
+</section>
+
+<section class="slide" data-section="40 MHz">
+  <div class="eyebrow">COLLISION → INFORMATION</div>
+  <h1>O(1) billion<br>collisions / second</h1>
+  <div class="collision-grid" aria-hidden="true"></div>
+  <p class="lead">Almost all are ordinary. Somewhere in the stream may be the event we have never seen before.</p>
+</section>
+
+<section class="slide center" data-section="DATA">
+  <div class="eyebrow">THE RAW STREAM</div>
+  <h1>O(TB–PB) / s</h1>
+  <p class="lead">The detector cannot simply write everything to permanent storage.</p>
+  <div class="funnel"><span>detector</span><span>buffer</span><span>decision</span></div>
+</section>
+
+<section class="slide" data-section="PIPELINE">
+  <div class="eyebrow">CMS DATA PROCESSING</div>
+  <h2>Intelligence moves toward the detector.</h2>
+  <div class="pipeline">
+    <div><b>DETECTOR</b><small>sensor data</small></div><i></i>
+    <div><b>ASIC</b><small>format / compress</small></div><i></i>
+    <div class="accent"><b>L1 FPGA</b><small>reconstruct / select</small></div><i></i>
+    <div><b>HLT</b><small>CPU + GPU</small></div><i></i>
+    <div><b>STORAGE</b><small>physics dataset</small></div>
+  </div>
+  <div class="metric-row three">
+    <div><strong>63 Tb/s</strong><span>HL-LHC L1 input</span></div>
+    <div><strong>~12 μs</strong><span>L1 buffer scale</span></div>
+    <div><strong>&gt;99%</strong><span>rejected early</span></div>
+  </div>
+</section>
+
+<section class="slide" data-section="PIPELINE">
+  <div class="eyebrow">LEVEL-1 TRIGGER</div>
+  <h1><em>~500</em> high-end<br>FPGAs</h1>
+  <p class="lead">Reconstruct events and execute many selections in parallel, with deterministic microsecond latency.</p>
+  <div class="fpga"><div class="fabric"></div><div class="fabric"></div><div class="fabric"></div></div>
+</section>
+
+<section class="slide center" data-section="PIPELINE">
+  <div class="eyebrow">CONVENTIONAL TRIGGER</div>
+  <h2>A magnificent filter.</h2>
+  <div class="rate-funnel">
+    <span style="--w:100%">40 MHz</span>
+    <span style="--w:46%">750 kHz</span>
+    <span style="--w:20%">~7 kHz</span>
+  </div>
+  <p>But the discarded collisions are gone.</p>
+</section>
+
+<section class="slide statement" data-section="SCOUTING">
+  <div class="eyebrow">A DIFFERENT QUESTION</div>
+  <h1>What if we did <em>not</em><br>throw away the other 99%?</h1>
+</section>
+
+<section class="slide" data-section="SCOUTING">
+  <div class="eyebrow">CMS 40 MHz LEVEL-1 DATA SCOUTING</div>
+  <h2>One collision. Two futures.</h2>
+  <div class="fork">
+    <div class="trunk">L1 reconstruction · 40 MHz</div>
+    <div class="branches">
+      <article><span>CONVENTIONAL</span><strong>750 kHz</strong><p>Full detector readout after L1 accept.</p></article>
+      <article class="scout"><span>SCOUTING</span><strong>40 MHz</strong><p>Reduced L1 objects from every bunch crossing.</p></article>
+    </div>
+  </div>
+  <aside>LEAP-40 Part B2 · Fig. 4</aside>
+</section>
+
+<section class="slide" data-section="SCOUTING">
+  <div class="eyebrow">SCOUTING CHANGES THE BOTTLENECK</div>
+  <div class="hero-number cyan">7.65</div>
+  <h2>Tb/s</h2>
+  <div class="pipeline compact">
+    <div><b>40 MHz</b><small>all crossings</small></div><i></i>
+    <div><b>~10 kB</b><small>L1 event</small></div><i></i>
+    <div class="accent"><b>7.65 Tb/s</b><small>scouting input</small></div><i></i>
+    <div><b>≤5 GB/s</b><small>offline storage</small></div>
+  </div>
+</section>
+
+<section class="slide center" data-section="SCOUTING">
+  <div class="eyebrow">THE NEW PROBLEM</div>
+  <div class="compression">
+    <strong>7.65 Tb/s</strong><i></i><strong>5 GB/s</strong>
+  </div>
+  <p class="lead">We recovered the collisions. Now we must understand, compress and search them while they are still streaming.</p>
+</section>
+
+<section class="slide" data-section="TOOLS">
+  <div class="eyebrow">NANOSECOND MACHINE LEARNING</div>
+  <h2>The model is not separate from the hardware.</h2>
+  <div class="toolchain">
+    <div><b>FP32</b><span>train</span></div>
+    <div><b>QAT</b><span>QKeras</span></div>
+    <div><b>HGQ</b><span>heterogeneous precision</span></div>
+    <div><b>hls4ml</b><span>compile</span></div>
+    <div><b>FPGA</b><span>pipeline</span></div>
+  </div>
+</section>
+
+<section class="slide" data-section="TOOLS">
+  <div class="eyebrow">HARDWARE-AWARE LEARNING</div>
+  <h1>Spend bits<br>where the model<br><em>needs them.</em></h1>
+  <div class="bit-depth"><span>16</span><span>8</span><span>6</span><span>4</span><span>3</span><span>2</span><span>1</span></div>
+  <p>Quantisation, pruning, heterogeneous precision, LUTs and knowledge distillation turn inference constraints into trainable design choices.</p>
+</section>
+
+<section class="slide" data-section="TOOLS">
+  <div class="eyebrow">hls4ml</div>
+  <h2>Neural network → tailored circuit</h2>
+  <div class="pipeline">
+    <div><b>PYTORCH / KERAS</b></div><i></i>
+    <div><b>hls4ml</b></div><i></i>
+    <div><b>HLS</b></div><i></i>
+    <div class="accent"><b>RTL</b></div><i></i>
+    <div><b>BITSTREAM</b></div>
+  </div>
+  <p class="lead">Parallelism and dataflow are chosen at design time. Weights and activations can stay on-chip.</p>
+</section>
+
+<section class="slide statement" data-section="SILICON">
+  <div class="eyebrow">MOVE INWARD</div>
+  <h1>Bring the algorithm<br>to the <mark>data</mark>.</h1>
+  <div class="hardware-scale"><span>CPU</span><span>GPU</span><span>FPGA</span><span>ASIC</span><span>PIXEL</span></div>
+</section>
+
+<section class="slide" data-section="SILICON">
+  <div class="eyebrow">CMS HGCAL · ECON-T</div>
+  <h1>Processing is already<br><mark>inside the detector.</mark></h1>
+  <div class="metric-row three">
+    <div><strong>40 MHz</strong><span>trigger data processing</span></div>
+    <div><strong>&lt;0.4 μs</strong><span>ECON-T latency</span></div>
+    <div><strong>1.28 Gb/s</strong><span>per output e-link</span></div>
+  </div>
+  <p class="lead">A radiation-tolerant ASIC performs programmable selection and compression before trigger data leave the detector.</p>
+</section>
+
+<section class="slide" data-section="SILICON">
+  <div class="eyebrow">SMART PIXELS</div>
+  <h1>What if the detector<br><em>understood</em><br>the hit?</h1>
+  <div class="pixel-matrix" aria-hidden="true"></div>
+  <p class="lead">Local feature extraction and low-pT rejection can reduce bandwidth before information ever leaves the sensor.</p>
+</section>
+
+<section class="slide" data-section="FCC-ee">
+  <div class="eyebrow">SCALE UP · FCC-ee</div>
+  <h1>More precision.<br>More channels.<br>Less material.</h1>
+  <p class="lead">Ultra-light, highly granular vertex detectors make data movement itself a design constraint. Sensor, readout and inference architecture must be co-designed.</p>
+  <aside>SmartPixel / FCC-ee section follows the supplied fastML ESPP talk; exact detector-rate assumptions should remain tied to that source.</aside>
+</section>
+
+<section class="slide statement" data-section="STREAMING">
+  <div class="eyebrow">ANOTHER FUTURE</div>
+  <h1>No hardware trigger.<br>The detector <em>streams.</em></h1>
+  <p class="lead">ePIC shifts event selection and reduction into distributed online firmware and software.</p>
+</section>
+
+<section class="slide" data-section="STREAMING">
+  <div class="eyebrow">ePIC dRICH</div>
+  <div class="hero-number">~320k</div>
+  <h2>continuously streaming channels</h2>
+  <div class="metric-row three">
+    <div><strong>30</strong><span>FPGA DAMs</span></div>
+    <div><strong>100 GbE</strong><span>output per DAM class</span></div>
+    <div><strong>≈3 Tb/s</strong><span>aggregate bandwidth ceiling</span></div>
+  </div>
+</section>
+
+<section class="slide" data-section="STREAMING">
+  <div class="eyebrow">DISTRIBUTED INFERENCE</div>
+  <h2>The neural network becomes part of the DAQ topology.</h2>
+  <div class="distributed">
+    <div class="many"><span>×30</span><b>local MLP</b><small>8 features / DAM</small></div>
+    <i></i>
+    <div><span>×6</span><b>sector MLP</b><small>4 features / sector</small></div>
+    <i></i>
+    <div class="global"><span>×1</span><b>global NN</b><small>binary decision</small></div>
+  </div>
+  <div class="decision"><b>KEEP</b><b>FLUSH</b></div>
+</section>
+
+<section class="slide statement" data-section="FUTURE">
+  <div class="eyebrow">THE TRAJECTORY</div>
+  <h1>Trigger → Scouting<br>→ Streaming<br>→ <em>Intelligent detector</em></h1>
+</section>
+
+<section class="slide statement" data-section="FUTURE">
+  <div class="eyebrow">AND THE HARDWARE TRAJECTORY</div>
+  <h1>CPU → GPU → FPGA<br>→ ASIC → <mark>pixel</mark></h1>
+  <p class="lead">The closer intelligence moves to the sensor, the less useless information has to move at all.</p>
+</section>
+
+<section class="slide finale" data-section="END">
+  <div class="eyebrow">THE REAL CHALLENGE</div>
+  <h1>Find the <mark>one</mark><br>without losing<br>the trillion.</h1>
+  <div class="rare-field dense" aria-hidden="true"></div>
+</section>
+
+<section class="slide title" data-section="END">
+  <div class="eyebrow">MACHINE LEARNING AT THE EDGE OF SCALE AND SPEED</div>
+  <h1>Thank you.</h1>
+  <p class="byline">Thea Klæboe Årrestad · ETH Zürich</p>
+</section>
+
+</main>
+<script src="script.js"></script>
+</body>
+</html>
